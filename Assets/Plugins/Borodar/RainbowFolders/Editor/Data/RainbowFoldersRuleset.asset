@@ -374,7 +374,7 @@ MonoBehaviour:
     IsBackgroundRecursive: 0
     IsHidden: 0
   - Type: 1
-    Key: Assets/FANTASTIC - Ancient Forest
+    Key: Assets/Davis3D
     Ordinal: 30
     Priority: 0
     IconType: 60
@@ -386,7 +386,7 @@ MonoBehaviour:
     IsBackgroundRecursive: 0
     IsHidden: 0
   - Type: 1
-    Key: Assets/Davis3D
+    Key: Assets/Fantastic Ancient Forest
     Ordinal: 31
     Priority: 0
     IconType: 60
