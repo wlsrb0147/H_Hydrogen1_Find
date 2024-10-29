@@ -25,6 +25,10 @@ public class PlayerScr : MonoBehaviour
     [SerializeField] private float currentSize = 1f;
     
     
+    //
+    public Vector3 maxRot ;
+    private Vector3 rottedAngle = Vector3.zero;
+    
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
@@ -53,10 +57,32 @@ public class PlayerScr : MonoBehaviour
         if (input != Vector2.zero && !isZooming)
         {
             input *= defaultSpeed * zoomSpeed;
-            Vector3 currentRotation = transform.eulerAngles;
-            currentRotation.y += input.x; // Y축 회전 (수평 회전)
-            currentRotation.x -= input.y; // X축 회전 (수직 회전)
-            transform.eulerAngles = new Vector3(currentRotation.x, currentRotation.y, 0f);
+            Vector3 currentRotation = cam.transform.eulerAngles;
+            rottedAngle.y += input.x;
+            rottedAngle.x += input.y;
+
+
+            if (Mathf.Abs(rottedAngle.y) > 75)
+            {
+                rottedAngle.y -= input.x;
+                Debug.Log("75도 넘음");
+            }
+            else
+            {
+                currentRotation.y += input.x; // Y축 회전 (수평 회전)
+            }
+
+            if (Mathf.Abs(rottedAngle.x) > 35)
+            {
+                rottedAngle.x -= input.y;
+            }
+            else
+            {
+                currentRotation.x -= input.y; // X축 회전 (수직 회전)
+            }
+            
+            
+            cam.transform.eulerAngles = new Vector3(currentRotation.x, currentRotation.y, 0f);
         }
     }
 
@@ -125,7 +151,7 @@ public class PlayerScr : MonoBehaviour
         defaultSpeed = is50FOV2 ? 1f : 0.5f;
 
         rectZoom.localScale = Vector3.one;
-        cam.fieldOfView = is50FOV2 ? 60f : 20f;
+        cam.fieldOfView = is50FOV2 ? 50f : 20f;
         isZooming = false;
     }
 }
