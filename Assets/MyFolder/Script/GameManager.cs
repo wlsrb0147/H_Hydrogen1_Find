@@ -7,7 +7,8 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
 
-    private List<Initializer> initializeMembers;
+    [SerializeField] private GameObject[] initializeMembers;
+    private List<Initializer> initializeMemberList = new();
 
     private void Awake()
     {
@@ -24,19 +25,27 @@ public class GameManager : MonoBehaviour
 
     private void OnEnable()
     {
-        Initialize();
-    }
-
-    public void AddInitializeMember(Initializer initializer)
-    {
-        initializeMembers.Add(initializer);
-    }
-
-    public void Initialize()
-    {
-        foreach (var v in initializeMembers)
+        AddInitializeMember();
+        foreach (var v in initializeMemberList)
         {
             v.Initialize();
         }
+    }
+
+    private void AddInitializeMember()
+    {
+        if (initializeMembers is null)
+        {
+            return;
+        }
+        foreach (var v in initializeMembers)
+        {
+            var x = v.GetComponent<Initializer>();
+            if (x != null) // 컴포넌트가 있을 때만 추가
+            {
+                initializeMemberList.Add(x);
+            }
+        }
+        
     }
 }

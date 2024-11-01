@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -26,12 +27,40 @@ public class PlayerScr : MonoBehaviour
     
     [SerializeField] private Vector3 rottedAngle = Vector3.zero;
     
+    
+    private Vector2 currentInput = Vector2.zero;
+    private float verticalInput;
+    
+    private bool isMovingUp = false;
+    private bool isMovingDown = false;
+    private float speed = 2.5f;
+    private Vector3 moveDirection2; // 이동 방향
+
+    public float x = 75;
+    
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
         cam = playerInput.camera ?? Camera.main;
         imgZoom = objZoom.GetComponent<Image>();
         rectZoom = objZoom.GetComponent<RectTransform>();
+        
+        Cursor.lockState = CursorLockMode.Locked;  // 커서를 잠금 해제
+        Cursor.visible = false;                   // 커서를 보이게 설정
+    }
+
+    private void OnClearCheat()
+    {
+        Debug.Log("Activated");
+        GameController.LoadScene();
+    }
+    
+    public void OnClearCheat(InputAction.CallbackContext context)
+    {
+        if (context.performed) // 버튼이 눌렸을 때만 실행
+        {
+            GameController.LoadScene();
+        }
     }
 
     private void FixedUpdate()
@@ -39,16 +68,100 @@ public class PlayerScr : MonoBehaviour
         Move(moveDirection);
     }
 
+    private void Update()
+    {
+        Vector2 normalizedInput = currentInput.normalized; // Vector2에서 정규화
+        Vector3 moveForwardBackward = transform.forward * normalizedInput.y;
+        Vector3 moveLeftRight = transform.right * normalizedInput.x;
+        Vector3 moveDirection = moveForwardBackward + moveLeftRight;
+
+// 속도 적용 (로컬 좌표에서 이동)
+        transform.localPosition += moveDirection * (speed * Time.deltaTime);
+
+        
+        transform.Translate(moveDirection2 * (speed * Time.deltaTime));
+    }
+
+
+    
+    private void OnMove2(InputValue value)
+    {
+        currentInput = value.Get<Vector2>();
+    }
+    
+    public void OnMove2(InputAction.CallbackContext context)
+    {
+        // 기존 Vector2 값 받기
+        currentInput = context.ReadValue<Vector2>();
+    }
+
+    public void OnUp(InputAction.CallbackContext context)
+    {
+        Debug.Log("Up");
+        if (context.performed) // 키가 눌러져 있을 때
+        {
+            Debug.Log("Up1");
+            moveDirection2 = Vector3.up;
+        }
+        else if (context.canceled) // 키가 떼어졌을 때
+        {
+            Debug.Log("Up2");
+            moveDirection2 = Vector3.zero;
+        }
+    }
+
+    // 아래로 이동 (E)
+    public void OnDown(InputAction.CallbackContext context)
+    {
+        Debug.Log("Down");
+        if (context.performed) // 키가 눌러져 있을 때
+        {
+            Debug.Log("Down1");
+            moveDirection2 = Vector3.down;
+        }
+        else if (context.canceled) // 키가 떼어졌을 때
+        {
+            Debug.Log("Down");
+            moveDirection2 = Vector3.zero;
+        }
+    }
+    
     private void OnMove(InputValue value)
     {
         Vector2 input = value.Get<Vector2>();
         
         moveDirection.x = input.x;
         moveDirection.y = input.y;
-        Debug.Log("Send Message : " + moveDirection);
         
     }
+    
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        if (context.performed || context.canceled) // 키 입력과 키 해제 이벤트 처리
+        {
+            Vector2 input = context.ReadValue<Vector2>();
+            moveDirection.x = input.x;
+            moveDirection.y = input.y;
+        }
+    }
 
+    
+    public void OnShot(InputAction.CallbackContext context)
+    {
+        Debug.Log("클릭");
+        
+        if (context.performed)
+        {
+            Debug.Log("클릭");
+            Debug.Log(is50FOV);
+        }
+            
+        if (context.performed && !is50FOV)
+        {
+            Debug.Log("Shot");
+        }
+    }
+    
     private void Move(Vector2 input)
     {
         if (input != Vector2.zero && !isZooming)
@@ -59,17 +172,17 @@ public class PlayerScr : MonoBehaviour
             rottedAngle.x += input.y;
 
 
-            if (Mathf.Abs(rottedAngle.y) > 90)
+            if (Mathf.Abs(rottedAngle.y) > x)
             {
                 rottedAngle.y -= input.x;
-                Debug.Log("75도 넘음");
+                Debug.Log(x+"도 넘음");
             }
             else
             {
                 currentRotation.y += input.x; // Y축 회전 (수평 회전)
             }
 
-            if (Mathf.Abs(rottedAngle.x) > 35)
+            if (Mathf.Abs(rottedAngle.x) > 30)
             {
                 rottedAngle.x -= input.y;
             }
@@ -86,6 +199,15 @@ public class PlayerScr : MonoBehaviour
     private void OnZoom(InputValue value)
     {
         if (value.isPressed)
+        {
+            StartZoom(is50FOV).Forget();
+            is50FOV = !is50FOV;
+        }
+    }
+    
+    public void OnZoom(InputAction.CallbackContext context)
+    {
+        if (context.performed) // 키가 눌렸을 때만 작동
         {
             StartZoom(is50FOV).Forget();
             is50FOV = !is50FOV;

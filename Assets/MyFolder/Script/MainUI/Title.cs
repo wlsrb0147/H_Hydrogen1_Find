@@ -10,4 +10,9 @@ public class Title : Initializer, IPointerClickHandler
         obj.SetActive(true);
         gameObject.SetActive(false);
     }
+
+    public override void Initialize()
+    {
+        gameObject.SetActive(true);   
+    }
 }
