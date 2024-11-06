@@ -11,7 +11,7 @@ public class GameController : MonoBehaviour
     
     [SerializeField] private Slider progressBar;
 
-    public static void LoadScene()
+    public static async void LoadScene()
     {
         ++_nextScene;
 
@@ -19,25 +19,25 @@ public class GameController : MonoBehaviour
         {
             _nextScene = 1;
             SceneManager.LoadScene(1);
+            Debug.Log(_nextScene);
+            return;
         }
-        else
-        {
-         SceneManager.LoadScene(0);
-        }
-        //_nextScene = sceneName;
+        Debug.Log("else" + _nextScene);
         
-        Debug.Log(_nextScene);
-    }
+        await SceneManager.LoadSceneAsync(0);
+        
+        GameObject loadingObject = GameObject.FindGameObjectWithTag("LoadingBar"); // 로딩 씬에 있는 로딩바를 찾음
+        Slider progressBar = loadingObject?.GetComponent<Slider>();
+        Debug.Log(progressBar);
+        LoadSceneProgress(progressBar).Forget();
 
-    private void Start()
-    {
-        LoadSceneProgress().Forget();
     }
-
-    private async UniTaskVoid LoadSceneProgress()
+    
+    private static async UniTaskVoid LoadSceneProgress(Slider progressBar)
     {
         AsyncOperation op = SceneManager.LoadSceneAsync(_nextScene);
         op.allowSceneActivation = false;
+        float offest = 1 / 0.9f;
         
         float timer = 0f;
         while (!op.isDone)
@@ -46,14 +46,14 @@ public class GameController : MonoBehaviour
 
             if (op.progress < 0.9f)
             {
-                progressBar.value = op.progress;
+                progressBar.value = op.progress * offest;
             }
             else
             {
                 timer += Time.unscaledDeltaTime;
-                progressBar.value = timer / op.progress;
+                progressBar.value = (timer / op.progress) * offest;
 
-                if (progressBar.value >= 0.9f)
+                if (progressBar.value >= 1f)
                 {
                     op.allowSceneActivation = true;
                     return;
