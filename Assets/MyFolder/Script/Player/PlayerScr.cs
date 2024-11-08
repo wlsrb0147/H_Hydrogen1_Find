@@ -148,18 +148,12 @@ public class PlayerScr : MonoBehaviour
     
     public void OnShot(InputAction.CallbackContext context)
     {
-        Debug.Log("클릭");
-        
-        if (context.performed)
+        // 입력이 시작될 때
+        if (context.started)
         {
-            Debug.Log("클릭");
-            Debug.Log(is50FOV);
+            Debug.Log("입력이 시작되었습니다.");
         }
-            
-        if (context.performed && !is50FOV)
-        {
-            Debug.Log("Shot");
-        }
+
     }
     
     private void Move(Vector2 input)
