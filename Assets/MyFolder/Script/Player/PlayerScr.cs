@@ -38,6 +38,7 @@ public class PlayerScr : MonoBehaviour
 
     public float x = 75;
     
+    private CreateGizmos gizmos;
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
@@ -47,6 +48,7 @@ public class PlayerScr : MonoBehaviour
         
         Cursor.lockState = CursorLockMode.Locked;  // 커서를 잠금 해제
         Cursor.visible = false;                   // 커서를 보이게 설정
+        gizmos = GetComponent<CreateGizmos>();
     }
 
     private void OnClearCheat()
@@ -97,15 +99,12 @@ public class PlayerScr : MonoBehaviour
 
     public void OnUp(InputAction.CallbackContext context)
     {
-        Debug.Log("Up");
         if (context.performed) // 키가 눌러져 있을 때
         {
-            Debug.Log("Up1");
             moveDirection2 = Vector3.up;
         }
         else if (context.canceled) // 키가 떼어졌을 때
         {
-            Debug.Log("Up2");
             moveDirection2 = Vector3.zero;
         }
     }
@@ -113,15 +112,12 @@ public class PlayerScr : MonoBehaviour
     // 아래로 이동 (E)
     public void OnDown(InputAction.CallbackContext context)
     {
-        Debug.Log("Down");
         if (context.performed) // 키가 눌러져 있을 때
         {
-            Debug.Log("Down1");
             moveDirection2 = Vector3.down;
         }
         else if (context.canceled) // 키가 떼어졌을 때
         {
-            Debug.Log("Down");
             moveDirection2 = Vector3.zero;
         }
     }
@@ -149,11 +145,10 @@ public class PlayerScr : MonoBehaviour
     public void OnShot(InputAction.CallbackContext context)
     {
         // 입력이 시작될 때
-        if (context.started)
+        if (context.started && !is50FOV)
         {
-            Debug.Log("입력이 시작되었습니다.");
+            gizmos.PerformBoxCast();
         }
-
     }
     
     private void Move(Vector2 input)
