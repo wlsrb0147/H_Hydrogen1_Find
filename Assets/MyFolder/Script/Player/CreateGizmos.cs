@@ -4,6 +4,7 @@ using UnityEngine;
 public class CreateGizmos : MonoBehaviour
 {
     public float frustumLength = 5f; // 프러스텀의 깊이
+    public float frustumLength2 = 5f; // 프러스텀의 깊이
     public float widthScale = 1f; // 프러스텀 폭의 비율
     public float heightScale = 1f; // 프러스텀 높이의 비율
     public LayerMask detectionLayer; // 탐지할 레이어 설정
@@ -11,10 +12,16 @@ public class CreateGizmos : MonoBehaviour
     [SerializeField] private bool showGizmo = true; // LineRenderer를 켜고 끌 수 있는 플래그
 
     private Camera cam;
-    private Vector3[] frustumCorners = new Vector3[4];
-    private Vector3[] adjustedFrustumCorners = new Vector3[4];
+    private readonly Vector3[] frustumCorners = new Vector3[4];
+    private readonly Vector3[] frustumCorners2 = new Vector3[4];
+    
+    private readonly Vector3[] adjustedFrustumCorners = new Vector3[4];
+    private readonly Vector3[] lineRendererCorners = new Vector3[4];
     private Transform cameraTransform;
     private LineRenderer lineRenderer;
+
+
+    [SerializeField] private Transform[] targetObject;
 
     private void Awake()
     {
@@ -38,18 +45,26 @@ public class CreateGizmos : MonoBehaviour
     private void Update()
     {
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
+        cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength2, Camera.MonoOrStereoscopicEye.Mono, frustumCorners2);
         Vector3 cameraPosition = cameraTransform.position;
 
         for (int i = 0; i < 4; i++)
         {
             adjustedFrustumCorners[i] = cameraTransform.TransformPoint(frustumCorners[i]);
+            lineRendererCorners[i] = cameraTransform.TransformPoint(frustumCorners2[i]);
 
             Vector3 cameraToCorner = adjustedFrustumCorners[i] - cameraPosition;
             Vector3 rightComponent = cameraTransform.right * (Vector3.Dot(cameraToCorner, cameraTransform.right) * widthScale);
             Vector3 upComponent = cameraTransform.up * (Vector3.Dot(cameraToCorner, cameraTransform.up) * heightScale);
             Vector3 adjustedDirection = rightComponent + upComponent + cameraTransform.forward * Vector3.Dot(cameraToCorner, cameraTransform.forward);
+            
+            Vector3 cameraToCorner2 = lineRendererCorners[i] - cameraPosition;
+            Vector3 rightComponent2 = cameraTransform.right * (Vector3.Dot(cameraToCorner2, cameraTransform.right) * widthScale);
+            Vector3 upComponent2 = cameraTransform.up * (Vector3.Dot(cameraToCorner2, cameraTransform.up) * heightScale);
+            Vector3 adjustedDirection2 = rightComponent2 + upComponent2 + cameraTransform.forward * Vector3.Dot(cameraToCorner2, cameraTransform.forward);
 
             adjustedFrustumCorners[i] = cameraPosition + adjustedDirection;
+            lineRendererCorners[i] = cameraPosition + adjustedDirection2;
         }
             
         // LineRenderer에 사각형의 꼭짓점 설정
@@ -58,17 +73,24 @@ public class CreateGizmos : MonoBehaviour
             lineRenderer.enabled = true;
             for (int i = 0; i < 4; i++)
             {
-                lineRenderer.SetPosition(i, adjustedFrustumCorners[i]);
+                lineRenderer.SetPosition(i, lineRendererCorners[i]);
             }
-            lineRenderer.SetPosition(4, adjustedFrustumCorners[0]); // 마지막 점을 첫 번째 점과 연결하여 닫기
+            lineRenderer.SetPosition(4, lineRendererCorners[0]); // 마지막 점을 첫 번째 점과 연결하여 닫기
         }
         else
         {
             lineRenderer.enabled = false;
         }
+        
+        float boxWidth = Vector3.Distance(adjustedFrustumCorners[0], adjustedFrustumCorners[3]) / 2;
+        float boxHeight = Vector3.Distance(adjustedFrustumCorners[0], adjustedFrustumCorners[1]) / 2;
+        
+        Debug.DrawRay(cameraPosition, cameraTransform.forward * frustumLength, Color.red);
+        Debug.DrawRay(cameraPosition, cameraTransform.right * boxWidth, Color.green);
+        Debug.DrawRay(cameraPosition, cameraTransform.up * boxHeight, Color.blue);
     }
 
-    public void PerformBoxCast()
+    /*public void PerformBoxCast()
     {
         // BoxCast 중심은 카메라 위치에서 시작
         Vector3 cameraPosition = cameraTransform.position;
@@ -79,23 +101,50 @@ public class CreateGizmos : MonoBehaviour
         Vector3 boxHalfExtents = new Vector3(boxWidth, boxHeight, frustumLength / 2);
 
         // BoxCast 범위를 시각적으로 확인하기 위해 Debug.DrawRay 추가
-        Debug.DrawRay(cameraPosition, cameraTransform.forward * frustumLength, Color.red);
+
 
         // BoxCast 수행
         if (Physics.BoxCast(
-                cameraPosition, // 카메라의 위치에서 시작
-                boxHalfExtents,
-                cameraTransform.forward,
-                out RaycastHit hitInfo,
-                cameraTransform.rotation, // 카메라 회전으로 설정
-                frustumLength,
-                detectionLayer
+                cameraPosition, // 시작 위치
+                boxHalfExtents, // 박스의 절반 크기
+                cameraTransform.forward, // 캐스팅 방향 (카메라 앞쪽)
+                out RaycastHit hitInfo, // 충돌 정보를 저장할 변수
+                cameraTransform.rotation, // 카메라의 회전
+                frustumLength, // 캐스팅의 최대 거리
+                detectionLayer // 탐지할 레이어 마스크
             ))
         {
             if (hitInfo.collider.CompareTag(targetTag))
             {
                 Debug.Log("태그가 " + targetTag + "인 충돌 탐지됨: " + hitInfo.collider.name);
                 CaptureAndSaveSprite();
+            }
+        }
+    }*/
+
+    public void CheckObject()
+    {
+        foreach (var v in targetObject)
+        {
+            if ( v == null || !v.gameObject.activeInHierarchy)
+            {
+                
+                continue;
+            }
+            Vector3 viewportPoint = cam.WorldToViewportPoint(v.position);
+
+            if (viewportPoint.x is >= 0.24f and <= 0.76f &&
+                viewportPoint.y is >= 0.21f and <= 0.79f &&
+                viewportPoint.z > 0)
+            {
+                Debug.Log("오브젝트가 카메라의 특정 범위 내에 있습니다.");
+                CaptureAndSaveSprite();
+                //roy(v.gameObject);
+                v.gameObject.SetActive(false);
+            }
+            else
+            {
+                Debug.Log("오브젝트가 범위 밖에 있습니다.");
             }
         }
     }
@@ -151,9 +200,11 @@ public class CreateGizmos : MonoBehaviour
         {
             Gizmos.DrawLine(cameraTransform.position, adjustedFrustumCorners[i]);
         }
+
         Gizmos.DrawLine(adjustedFrustumCorners[0], adjustedFrustumCorners[1]);
         Gizmos.DrawLine(adjustedFrustumCorners[1], adjustedFrustumCorners[2]);
         Gizmos.DrawLine(adjustedFrustumCorners[2], adjustedFrustumCorners[3]);
         Gizmos.DrawLine(adjustedFrustumCorners[3], adjustedFrustumCorners[0]);
+
     }
 }

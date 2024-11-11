@@ -147,7 +147,10 @@ public class PlayerScr : MonoBehaviour
         // 입력이 시작될 때
         if (context.started && !is50FOV)
         {
-            gizmos.PerformBoxCast();
+            //gizmos.PerformBoxCast();
+            //gizmos.CheckObject();
+            // 이제 안씀
+            GameController.ReloadScene();
         }
     }
     
@@ -191,6 +194,11 @@ public class PlayerScr : MonoBehaviour
         {
             StartZoom(is50FOV).Forget();
             is50FOV = !is50FOV;
+
+            if (is50FOV)
+            {
+                gizmos.CheckObject();
+            }
         }
     }
     
@@ -200,6 +208,11 @@ public class PlayerScr : MonoBehaviour
         {
             StartZoom(is50FOV).Forget();
             is50FOV = !is50FOV;
+            
+            if (is50FOV)
+            {
+                gizmos.CheckObject();
+            }
         }
     }
 
