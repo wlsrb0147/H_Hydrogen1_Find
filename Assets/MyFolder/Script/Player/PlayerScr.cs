@@ -1,4 +1,3 @@
-using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -75,10 +74,10 @@ public class PlayerScr : MonoBehaviour
         Vector2 normalizedInput = currentInput.normalized; // Vector2에서 정규화
         Vector3 moveForwardBackward = transform.forward * normalizedInput.y;
         Vector3 moveLeftRight = transform.right * normalizedInput.x;
-        Vector3 moveDirection = moveForwardBackward + moveLeftRight;
+        Vector3 totalMoveDirection = moveForwardBackward + moveLeftRight;
 
 // 속도 적용 (로컬 좌표에서 이동)
-        transform.localPosition += moveDirection * (speed * Time.deltaTime);
+        transform.localPosition += totalMoveDirection * (speed * Time.deltaTime);
 
         
         transform.Translate(moveDirection2 * (speed * Time.deltaTime));

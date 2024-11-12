@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(LineRenderer))]
 public class CreateGizmos : MonoBehaviour
@@ -20,7 +21,8 @@ public class CreateGizmos : MonoBehaviour
     private Transform cameraTransform;
     private LineRenderer lineRenderer;
 
-
+    private GameManager gameManager;
+    
     [SerializeField] private Transform[] targetObject;
 
     private void Awake()
@@ -33,6 +35,8 @@ public class CreateGizmos : MonoBehaviour
         }
         cameraTransform = cam.transform;
         
+        gameManager = GameManager.instance;
+        
         // LineRenderer 설정
         lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = 5; // 사각형의 네 꼭짓점과 첫 번째 점을 연결하여 닫기
@@ -42,8 +46,11 @@ public class CreateGizmos : MonoBehaviour
         lineRenderer.useWorldSpace = true; // 월드 좌표 사용
     }
 
+
     private void Update()
     {
+        Debug.Log("gameManager Score : " + gameManager.GetScore());
+        
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength2, Camera.MonoOrStereoscopicEye.Mono, frustumCorners2);
         Vector3 cameraPosition = cameraTransform.position;
@@ -139,6 +146,7 @@ public class CreateGizmos : MonoBehaviour
             {
                 Debug.Log("오브젝트가 카메라의 특정 범위 내에 있습니다.");
                 CaptureAndSaveSprite();
+                gameManager.AddScore();
                 //roy(v.gameObject);
                 v.gameObject.SetActive(false);
             }

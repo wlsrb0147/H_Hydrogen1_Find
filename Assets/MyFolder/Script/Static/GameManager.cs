@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using NUnit.Framework;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -19,10 +17,9 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            instance.score = 0;
             Destroy(gameObject);
         }
-        
-        DontDestroyOnLoad(gameObject);
     }
 
     private void OnEnable()
@@ -53,5 +50,10 @@ public class GameManager : MonoBehaviour
     public void AddScore()
     {
         ++score;
+    }
+
+    public int GetScore()
+    {
+        return score;
     }
 }
