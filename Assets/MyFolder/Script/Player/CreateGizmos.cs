@@ -1,4 +1,8 @@
+using Cysharp.Threading.Tasks;
+using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 [RequireComponent(typeof(LineRenderer))]
@@ -8,10 +12,13 @@ public class CreateGizmos : MonoBehaviour
     public float frustumLength2 = 5f; // 프러스텀의 깊이
     public float widthScale = 1f; // 프러스텀 폭의 비율
     public float heightScale = 1f; // 프러스텀 높이의 비율
-    public LayerMask detectionLayer; // 탐지할 레이어 설정
-    public string targetTag = "Target"; // 탐지할 태그
     [SerializeField] private bool showGizmo = true; // LineRenderer를 켜고 끌 수 있는 플래그
-
+    [SerializeField] private popup[] popups;
+    
+    [SerializeField] private Volume PPvolume;
+    private DepthOfField depthOfField; // Depth of Field 효과 저장
+    private float dof;
+    
     private Camera cam;
     private readonly Vector3[] frustumCorners = new Vector3[4];
     private readonly Vector3[] frustumCorners2 = new Vector3[4];
@@ -44,12 +51,20 @@ public class CreateGizmos : MonoBehaviour
         lineRenderer.startWidth = 0.02f; // 선의 두께 설정
         lineRenderer.endWidth = 0.02f;
         lineRenderer.useWorldSpace = true; // 월드 좌표 사용
+
+        PPvolume.profile.TryGet(out depthOfField);
+        dof = depthOfField.focusDistance.value;
     }
 
 
     private void Update()
     {
         Debug.Log("gameManager Score : " + gameManager.GetScore());
+
+        if (Input.GetKeyDown(KeyCode.Alpha9))
+        {
+            DisablePopup();
+        }
         
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength2, Camera.MonoOrStereoscopicEye.Mono, frustumCorners2);
@@ -98,6 +113,7 @@ public class CreateGizmos : MonoBehaviour
     }
 
     /*public void PerformBoxCast()
+    /*public void PerformBoxCast()
     {
         // BoxCast 중심은 카메라 위치에서 시작
         Vector3 cameraPosition = cameraTransform.position;
@@ -131,33 +147,78 @@ public class CreateGizmos : MonoBehaviour
 
     public void CheckObject()
     {
-        foreach (var v in targetObject)
+
+        for (int i = 0; i < targetObject.Length; i++)
         {
-            if ( v == null || !v.gameObject.activeInHierarchy)
+            if ( targetObject[i] == null || !targetObject[i].gameObject.activeInHierarchy)
             {
                 
                 continue;
             }
-            Vector3 viewportPoint = cam.WorldToViewportPoint(v.position);
+            Vector3 viewportPoint = cam.WorldToViewportPoint(targetObject[i].position);
 
             if (viewportPoint.x is >= 0.24f and <= 0.76f &&
                 viewportPoint.y is >= 0.21f and <= 0.79f &&
                 viewportPoint.z > 0)
             {
                 Debug.Log("오브젝트가 카메라의 특정 범위 내에 있습니다.");
-                CaptureAndSaveSprite();
+                Sprite spr = CaptureAndSaveSprite();
                 gameManager.AddScore();
+                
+                // 팝업 떠야함
+                BlurAndPopUp(i,spr).Forget();
+                
                 //roy(v.gameObject);
-                v.gameObject.SetActive(false);
+                targetObject[i].gameObject.SetActive(false);
             }
             else
             {
                 Debug.Log("오브젝트가 범위 밖에 있습니다.");
             }
         }
+        foreach (var v in targetObject)
+        {
+            
+        }
+    }
+
+    private async UniTaskVoid BlurAndPopUp(int x, Sprite sprite)
+    {
+        await UniTask.Delay(500);
+        DOTween.To(
+            () => depthOfField.focusDistance.value,        // 현재 focusDistance 값 가져오기
+            x => depthOfField.focusDistance.value = x,     // 계산된 값을 focusDistance.value에 설정
+            0.1f,                                          // 목표 값 (0.1f로 설정)
+            0.5f                                             
+        );
+        await UniTask.Delay(333);
+        popups[x].gameObject.SetActive(true);
+        popups[x].SetImage(sprite);
+    }
+
+    private void SetOriginFOV()
+    {
+        DOTween.To(() => depthOfField.focusDistance.value,    // 현재 focusDistance 값
+            x => depthOfField.focusDistance.value = dof, // 변경된 값을 할당
+            dof,                                       // 목표 값
+            2f);                                 // 애니메이션 지속 시간
+    }
+
+    public void DisablePopup()
+    {
+        foreach (var v in popups)
+        {
+            if (v.gameObject.activeSelf)
+            {
+                v.DisableObject();
+            }
+        }
+
+        SetOriginFOV();
     }
     
-    private void CaptureAndSaveSprite()
+    // 여기서 blur 설정해야함
+    private Sprite CaptureAndSaveSprite()
     {
         // RenderTexture 생성 및 설정
         RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 24);
@@ -194,6 +255,8 @@ public class CreateGizmos : MonoBehaviour
         GameController.SaveImage(capturedSprite);
 
         Debug.Log("잘라낸 영역만 캡처되었습니다.");
+
+        return capturedSprite;
     }
     
 

@@ -7,7 +7,7 @@ public class GameManager : MonoBehaviour
     private int score;
 
     [SerializeField] private GameObject[] initializeMembers;
-    private List<Initializer> initializeMemberList = new();
+    private readonly List<Initializer> initializeMemberList = new();
 
     private void Awake()
     {

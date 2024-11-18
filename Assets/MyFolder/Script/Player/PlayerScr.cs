@@ -1,6 +1,8 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class PlayerScr : MonoBehaviour
@@ -13,6 +15,8 @@ public class PlayerScr : MonoBehaviour
     [SerializeField] private GameObject objZoom;
     private Image imgZoom;
     private RectTransform rectZoom;
+
+    
 
     private readonly Vector3 targetScale = new(1.884f, 1.635f, 1f);
     [SerializeField] private float defaultSpeed = 1f;

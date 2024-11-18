@@ -1,0 +1,46 @@
+{
+    "name": "Intro",
+    "maps": [
+        {
+            "name": "Default",
+            "id": "0bea4a20-cda7-439b-bf83-1353c3c11397",
+            "actions": [
+                {
+                    "name": "Right",
+                    "type": "Button",
+                    "id": "b2a548c6-d885-439e-aa0b-5ed303e90168",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "caa89572-1f42-48b8-a7da-ac7d8873ef2a",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "New Control Scheme",
+            "bindingGroup": "New Control Scheme",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}

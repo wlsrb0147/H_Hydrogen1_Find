@@ -5,17 +5,16 @@ using UnityEngine.UI;
 
 public class GameController : MonoBehaviour
 {
-    private static int _currentScene = 1;
+    public static int currentScene = 0;
     private static readonly Sprite[] SavedImage = new Sprite[15];
-    
-    [SerializeField] private Slider progressBar;
-
     private static int _currentSavedImage;
+
+    public static AsyncOperation op;
     
     public static void SaveImage(Sprite sprite)
     {
         int endIndex;
-        switch (_currentScene)
+        switch (currentScene)
         {
             case 2:
                 endIndex = 5;
@@ -54,26 +53,28 @@ public class GameController : MonoBehaviour
 
     public static async void ReloadScene()
     {
-        _currentSavedImage = (_currentScene - 2) * 5;
-        Debug.Log("else" + _currentScene);
+        _currentSavedImage = (currentScene - 2) * 5;
+        Debug.Log("else" + currentScene);
         
-        await SceneManager.LoadSceneAsync(0);
-        
-        GameObject loadingObject = GameObject.FindGameObjectWithTag("LoadingBar"); // 로딩 씬에 있는 로딩바를 찾음
-        Slider progressBar = loadingObject?.GetComponent<Slider>();
-        Debug.Log(progressBar);
-        LoadSceneProgress(progressBar).Forget();
+        await SceneManager.LoadSceneAsync(1);
     }
 
     public static async void LoadScene()
     {
-        ++_currentScene;
-
-        if (_currentScene == 6)
+        if (currentScene != 0)
         {
-            _currentScene = 1;
-            SceneManager.LoadScene(1);
-            Debug.Log(_currentScene);
+            ++currentScene;
+        }
+        else
+        {
+            currentScene = 2;
+        }
+
+        if (currentScene == 6)
+        {
+            currentScene = 0;
+            SceneManager.LoadScene(0);
+            Debug.Log(currentScene);
             for (int i = 0; i < _currentSavedImage; i++)
             {
                 SavedImage[i] = null;
@@ -82,44 +83,15 @@ public class GameController : MonoBehaviour
             return;
         }
 
-        _currentSavedImage = (_currentScene - 2) * 5;
-        Debug.Log("else" + _currentScene);
+        _currentSavedImage = (currentScene - 2) * 5;
+        Debug.Log("else" + currentScene);
         
-        await SceneManager.LoadSceneAsync(0);
-        
-        GameObject loadingObject = GameObject.FindGameObjectWithTag("LoadingBar"); // 로딩 씬에 있는 로딩바를 찾음
-        Slider progressBar = loadingObject?.GetComponent<Slider>();
-        Debug.Log(progressBar);
-        LoadSceneProgress(progressBar).Forget();
-
+        await SceneManager.LoadSceneAsync(1);
     }
     
-    private static async UniTaskVoid LoadSceneProgress(Slider progressBar)
+    public static async UniTaskVoid LoadSceneProgress()
     {
-        AsyncOperation op = SceneManager.LoadSceneAsync(_currentScene);
+        op = SceneManager.LoadSceneAsync(currentScene);
         op.allowSceneActivation = false;
-        const float offset = 1 / 0.9f;
-        
-        float timer = 0f;
-        while (!op.isDone)
-        {
-            await UniTask.Yield(PlayerLoopTiming.Update);
-
-            if (op.progress < 0.9f)
-            {
-                progressBar.value = op.progress * offset;
-            }
-            else
-            {
-                timer += Time.unscaledDeltaTime;
-                progressBar.value = (timer / op.progress) * offset;
-
-                if (progressBar.value >= 1f)
-                {
-                    op.allowSceneActivation = true;
-                    return;
-                }
-            }
-        }
     }
 }
