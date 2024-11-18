@@ -29,6 +29,9 @@ public class LoadingControl : MonoBehaviour
             case 4:
                 currentPlayer = players[2];
                 break;
+            case 5:
+                currentPlayer = players[3];
+                break;
         }
         
         currentPlayer.targetTexture = renderTexture;

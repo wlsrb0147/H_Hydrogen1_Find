@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
 {
@@ -9,17 +10,26 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject[] initializeMembers;
     private readonly List<Initializer> initializeMemberList = new();
 
+    [SerializeField] private VideoPlayer player;
+    [SerializeField] private GameObject Renderer;
+ 
     private void Awake()
     {
         if (!instance)
         {
             instance = this;
+            player.loopPointReached += PlayerOnloopPointReached;
         }
         else
         {
             instance.score = 0;
             Destroy(gameObject);
         }
+    }
+
+    private void PlayerOnloopPointReached(VideoPlayer source)
+    {
+        GameController.LoadScene();
     }
 
     private void OnEnable()

@@ -18,7 +18,7 @@ public class PlayerScr : MonoBehaviour
 
     
 
-    private readonly Vector3 targetScale = new(1.884f, 1.635f, 1f);
+    private readonly Vector3 targetScale = new(1.15f, 1.15f, 1f);
     [SerializeField] private float defaultSpeed = 1f;
     [SerializeField] private float zoomSpeed = 0.5f;
     
