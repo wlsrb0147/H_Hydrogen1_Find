@@ -49,8 +49,7 @@ public class PlayerScr : MonoBehaviour
         imgZoom = objZoom.GetComponent<Image>();
         rectZoom = objZoom.GetComponent<RectTransform>();
         
-        Cursor.lockState = CursorLockMode.Locked;  // 커서를 잠금 해제
-        Cursor.visible = false;                   // 커서를 보이게 설정
+        Cursor.visible = false; 
         gizmos = GetComponent<CreateGizmos>();
     }
 
@@ -85,6 +84,11 @@ public class PlayerScr : MonoBehaviour
 
         
         transform.Translate(moveDirection2 * (speed * Time.deltaTime));
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            Cursor. visible = !Cursor. visible;
+        }
     }
 
 
