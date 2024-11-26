@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.Video;
 
 public class GameManager : MonoBehaviour
@@ -10,26 +12,48 @@ public class GameManager : MonoBehaviour
     [SerializeField] private GameObject[] initializeMembers;
     private readonly List<Initializer> initializeMemberList = new();
 
-    [SerializeField] private VideoPlayer player;
-    [SerializeField] private GameObject Renderer;
+    private VideoPlayer timerPlayer;
+    private Result result;
+    
  
     private void Awake()
     {
         if (!instance)
         {
             instance = this;
-            player.loopPointReached += PlayerOnloopPointReached;
         }
         else
         {
             instance.score = 0;
             Destroy(gameObject);
         }
+        
+        DontDestroyOnLoad(gameObject);
+
+        SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
+    }
+
+    public void SetTimer(VideoPlayer videoPlayer)
+    {
+        timerPlayer = videoPlayer;
+        timerPlayer.loopPointReached += PlayerOnloopPointReached;
+    }
+
+    private void SceneManagerOnsceneLoaded(Scene arg0, LoadSceneMode arg1)
+    {
+        score = 0;
+    }
+    
+    private void OnDestroy()
+    {
+        // 씬 로드 이벤트 해제 (필수: 메모리 누수 방지)
+        SceneManager.sceneLoaded -= SceneManagerOnsceneLoaded;
     }
 
     private void PlayerOnloopPointReached(VideoPlayer source)
     {
-        GameController.LoadScene();
+        result.ShowResult(score);
+        source.gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -56,6 +80,7 @@ public class GameManager : MonoBehaviour
             }
         }
     }
+    
 
     public void AddScore()
     {
@@ -65,5 +90,10 @@ public class GameManager : MonoBehaviour
     public int GetScore()
     {
         return score;
+    }
+
+    public void SetResult(Result result)
+    {
+        this.result = result;
     }
 }

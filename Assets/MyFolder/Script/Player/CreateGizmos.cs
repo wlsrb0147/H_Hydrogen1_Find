@@ -59,8 +59,6 @@ public class CreateGizmos : MonoBehaviour
 
     private void Update()
     {
-        Debug.Log("gameManager Score : " + gameManager.GetScore());
-
         if (Input.GetKeyDown(KeyCode.Alpha9))
         {
             DisablePopup();
