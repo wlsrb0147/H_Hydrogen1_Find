@@ -14,9 +14,8 @@ public class GameManager : MonoBehaviour
 
     private VideoPlayer timerPlayer;
     private Result result;
-    
-    public Vector2[] odd = {new (0,-137), new (-230,-137),new (230,-137), new (-460,-137),new (460,-137)};
-    public Vector2[] even = {new(-115, 137), new(115, 137), new(-345, -137), new(345, -137) }; 
+
+    public float[] odd = { -460, -230, 0, 230, 460 };
  
     private void Awake()
     {
@@ -55,7 +54,6 @@ public class GameManager : MonoBehaviour
     private void PlayerOnloopPointReached(VideoPlayer source)
     {
         result.ShowResult(score);
-        source.gameObject.SetActive(false);
     }
 
     private void OnEnable()

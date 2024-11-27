@@ -50,6 +50,16 @@ public class GameController : MonoBehaviour
             }
         }
     }
+    
+    public static void LoadAnSprite(out Sprite image,int num)
+    {
+        image = null;
+        
+        if (SavedImage[num] is not null)
+        {
+            image = SavedImage[num];
+        }
+    }
 
     public static async void ReloadScene()
     {
@@ -92,6 +102,21 @@ public class GameController : MonoBehaviour
     public static async UniTaskVoid LoadSceneProgress()
     {
         op = SceneManager.LoadSceneAsync(currentScene);
-        op.allowSceneActivation = false;
+        if (op is not null)
+        {
+            op.allowSceneActivation = false;
+        }
+    }
+
+    public static void GoToTitle()
+    {
+        currentScene = 0;
+        SceneManager.LoadScene(0);
+        Debug.Log(currentScene);
+        for (int i = 0; i < _currentSavedImage; i++)
+        {
+            SavedImage[i] = null;
+        }
+        _currentSavedImage = 0;
     }
 }

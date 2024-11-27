@@ -1,4 +1,5 @@
 using System;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -12,6 +13,10 @@ public class Result : MonoBehaviour
     private GameManager gameManager;
     
     [SerializeField] private GameObject[] results;
+    
+    [SerializeField] private MoveAndFlip[] moveObjects;
+
+    [SerializeField] private GameObject timer;
     
     private void Awake()
     {
@@ -28,6 +33,9 @@ public class Result : MonoBehaviour
 
     public void ShowResult(int score)
     {
+        // 타이머 꺼야함
+        timer.SetActive(false);
+
         foreach (GameObject obj in results)
         {
             obj.SetActive(true);
@@ -41,6 +49,8 @@ public class Result : MonoBehaviour
         {
             LoseGame();
         }
+
+        FlipImages(gameManager.GetScore()).Forget();
     }
     
     private void WinGame()
@@ -53,5 +63,16 @@ public class Result : MonoBehaviour
     {
         loseMovie.targetTexture = renderTexture;
         loseMovie.Play();
+    }
+
+    private async UniTaskVoid FlipImages(int score)
+    {
+        await UniTask.Delay(2000);
+        for (int i = 0; i < moveObjects.Length; i++)
+        {
+            moveObjects[i].StartMove(score);
+
+            await UniTask.Delay(100);
+        }
     }
 }
