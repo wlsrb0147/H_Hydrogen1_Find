@@ -552,8 +552,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initializeMembers: []
-  player: {fileID: 0}
-  Renderer: {fileID: 0}
 --- !u!4 &682531706
 Transform:
   m_ObjectHideFlags: 0

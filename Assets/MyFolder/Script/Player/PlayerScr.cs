@@ -1,8 +1,6 @@
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.Rendering;
-using UnityEngine.Rendering.Universal;
 using UnityEngine.UI;
 
 public class PlayerScr : MonoBehaviour
@@ -16,8 +14,8 @@ public class PlayerScr : MonoBehaviour
     private Image imgZoom;
     private RectTransform rectZoom;
 
-    
-
+    private bool isBlocked;
+ 
     private readonly Vector3 targetScale = new(1.15f, 1.15f, 1f);
     [SerializeField] private float defaultSpeed = 1f;
     [SerializeField] private float zoomSpeed = 0.5f;
@@ -33,15 +31,35 @@ public class PlayerScr : MonoBehaviour
     
     private Vector2 currentInput = Vector2.zero;
     private float verticalInput;
-    
-    private bool isMovingUp = false;
-    private bool isMovingDown = false;
-    private float speed = 2.5f;
-    private Vector3 moveDirection2; // 이동 방향
 
+    private const float Speed = 2.5f;
+    private Vector3 moveDirection2; // 이동 방향
+    
     public float x = 75;
     
-    private CreateGizmos gizmos;
+    private CreateGizmos createGizmos;
+    
+    // 실패 관련
+    private bool isFailed;
+    private bool canControl;
+    [SerializeField] private Selected[] selected;
+    private bool isGiveUp = true;
+    
+    // 1. isFailed가 true일 때, 모든 입력 막음
+    // 2. canControl이 true일 때, 조작 가능해짐
+    
+
+    public void SetIsFailedTrue()
+    {
+        isFailed = true;
+        Invoke(nameof(SetCanControlTrue),1f);
+    }
+
+    private void SetCanControlTrue()
+    {
+        canControl = true;
+    }
+    
     private void Awake()
     {
         playerInput = GetComponent<PlayerInput>();
@@ -50,13 +68,7 @@ public class PlayerScr : MonoBehaviour
         rectZoom = objZoom.GetComponent<RectTransform>();
         
         Cursor.visible = false; 
-        gizmos = GetComponent<CreateGizmos>();
-    }
-
-    private void OnClearCheat()
-    {
-        Debug.Log("Activated");
-        GameController.LoadScene();
+        createGizmos = GetComponent<CreateGizmos>();
     }
     
     public void OnClearCheat(InputAction.CallbackContext context)
@@ -69,34 +81,62 @@ public class PlayerScr : MonoBehaviour
 
     private void FixedUpdate()
     {
-        Move(moveDirection);
+        if (isBlocked) return;
+
+        if (!isFailed)
+        {
+            Move(moveDirection);
+        }
+        else
+        {
+            ControlFinger(moveDirection);
+        }
+    }
+
+    private void ControlFinger(Vector2 input)
+    {
+        if (canControl)
+        {
+            if (input.x < 0)
+            {
+                selected[0].ToggleImage(true);
+                selected[1].ToggleImage(false);
+                isGiveUp = true;
+            }
+            else if (input.x > 0)
+            {
+                selected[1].ToggleImage(true);
+                selected[0].ToggleImage(false);
+                isGiveUp = false;
+            }
+        }
+    }
+
+    public void SetIsBlocked(bool isBlocked)
+    {
+        this.isBlocked = isBlocked;
     }
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            Cursor. visible = !Cursor. visible;
+        }
+        
         Vector2 normalizedInput = currentInput.normalized; // Vector2에서 정규화
         Vector3 moveForwardBackward = transform.forward * normalizedInput.y;
         Vector3 moveLeftRight = transform.right * normalizedInput.x;
         Vector3 totalMoveDirection = moveForwardBackward + moveLeftRight;
 
 // 속도 적용 (로컬 좌표에서 이동)
-        transform.localPosition += totalMoveDirection * (speed * Time.deltaTime);
-
+        transform.localPosition += totalMoveDirection * (Speed * Time.deltaTime);
         
-        transform.Translate(moveDirection2 * (speed * Time.deltaTime));
+        transform.Translate(moveDirection2 * (Speed * Time.deltaTime));
 
-        if (Input.GetKeyDown(KeyCode.M))
-        {
-            Cursor. visible = !Cursor. visible;
-        }
+
     }
-
-
     
-    private void OnMove2(InputValue value)
-    {
-        currentInput = value.Get<Vector2>();
-    }
     
     public void OnMove2(InputAction.CallbackContext context)
     {
@@ -106,6 +146,7 @@ public class PlayerScr : MonoBehaviour
 
     public void OnUp(InputAction.CallbackContext context)
     {
+        
         if (context.performed) // 키가 눌러져 있을 때
         {
             moveDirection2 = Vector3.up;
@@ -119,6 +160,7 @@ public class PlayerScr : MonoBehaviour
     // 아래로 이동 (E)
     public void OnDown(InputAction.CallbackContext context)
     {
+        
         if (context.performed) // 키가 눌러져 있을 때
         {
             moveDirection2 = Vector3.down;
@@ -129,18 +171,9 @@ public class PlayerScr : MonoBehaviour
         }
     }
     
-    private void OnMove(InputValue value)
-    {
-        Vector2 input = value.Get<Vector2>();
-        
-        moveDirection.x = input.x;
-        moveDirection.y = input.y;
-        
-    }
-    
     public void OnMove(InputAction.CallbackContext context)
     {
-        if (context.performed || context.canceled) // 키 입력과 키 해제 이벤트 처리
+        if (context.performed || context.canceled ) // 키 입력과 키 해제 이벤트 처리
         {
             Vector2 input = context.ReadValue<Vector2>();
             moveDirection.x = input.x;
@@ -151,14 +184,12 @@ public class PlayerScr : MonoBehaviour
     
     public void OnShot(InputAction.CallbackContext context)
     {
-        // 입력이 시작될 때
-        if (context.started && !is50FOV)
-        {
-            //gizmos.PerformBoxCast();
-            //gizmos.CheckObject();
-            // 이제 안씀
-            GameController.ReloadScene();
-        }
+            // 입력이 시작될 때
+            if (context.started && !is50FOV  )
+            {
+                GameController.ReloadScene();
+            }
+        
     }
     
     private void Move(Vector2 input)
@@ -194,33 +225,42 @@ public class PlayerScr : MonoBehaviour
             cam.transform.eulerAngles = new Vector3(currentRotation.x, currentRotation.y, 0f);
         }
     }
-
-    private void OnZoom(InputValue value)
-    {
-        if (value.isPressed)
-        {
-            StartZoom(is50FOV).Forget();
-            is50FOV = !is50FOV;
-
-            if (is50FOV)
-            {
-                gizmos.CheckObject();
-            }
-        }
-    }
     
     public void OnZoom(InputAction.CallbackContext context)
     {
-        if (context.performed) // 키가 눌렸을 때만 작동
+        if (!context.performed) return;
+        
+        if (!isFailed)
         {
-            StartZoom(is50FOV).Forget();
-            is50FOV = !is50FOV;
-            
-            if (is50FOV)
+            if (!isBlocked)
             {
-                gizmos.CheckObject();
+                StartZoom(is50FOV).Forget();
+                is50FOV = !is50FOV;
+                
+                if (is50FOV)
+                {
+                    createGizmos.CheckObject();
+                }
+            }
+            else
+            {
+                isBlocked = false;
+                createGizmos.DisablePopup();
             }
         }
+        else
+        {
+            if (isGiveUp)
+            {
+                GameController.GoToTitle();
+            }
+            else
+            {
+                GameController.ReloadScene();
+            }
+        }
+
+
     }
 
     private async UniTaskVoid StartZoom(bool is50FOV2)

@@ -1,4 +1,3 @@
-using System;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -34,7 +33,7 @@ public class MoveAndFlip : MonoBehaviour, IPointerClickHandler
     }
 
     // order는 01234
-    // scroe는 012345, 5일때 4까지
+    // score는 012345, 5일때 4까지
     public void StartMove(int score)
     {
         rectTransform.DOAnchorPosX(pos, 1f).SetEase(Ease.InOutQuad);

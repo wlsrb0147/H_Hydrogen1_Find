@@ -65,8 +65,9 @@ public class GameController : MonoBehaviour
     {
         _currentSavedImage = (currentScene - 2) * 5;
         Debug.Log("else" + currentScene);
-        
-        await SceneManager.LoadSceneAsync(1);
+
+        --currentScene; 
+        LoadScene();
     }
 
     public static async void LoadScene()
@@ -99,7 +100,7 @@ public class GameController : MonoBehaviour
         await SceneManager.LoadSceneAsync(1);
     }
     
-    public static async UniTaskVoid LoadSceneProgress()
+    public static void LoadSceneProgress()
     {
         op = SceneManager.LoadSceneAsync(currentScene);
         if (op is not null)

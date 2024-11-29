@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using DG.Tweening;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.Video;
+
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,12 +15,56 @@ public class GameManager : MonoBehaviour
 
     [SerializeField] private GameObject[] initializeMembers;
     private readonly List<Initializer> initializeMemberList = new();
-
+    private Volume PPvolume;
+    private DepthOfField depthOfField;
+    private float dof;
+    
     private VideoPlayer timerPlayer;
     private Result result;
 
-    public float[] odd = { -460, -230, 0, 230, 460 };
- 
+    [NonSerialized] public float[] odd = { -460, -230, 0, 230, 460 };
+
+
+    public void SetPPvolume(Volume volume)
+    {
+        PPvolume = volume;
+        PPvolume.profile.TryGet(out depthOfField);
+        dof = depthOfField.focusDistance.value;
+    }
+
+    public void TimerPause()
+    {
+        timerPlayer.Pause();
+    }
+
+    public void TimerResume()
+    {
+        timerPlayer.Play();
+    }
+
+    public DepthOfField GetDepthOfField()
+    {
+        return depthOfField;
+    }
+
+    public void BlurDepth()
+    {
+        DOTween.To(
+            () => depthOfField.focusDistance.value,        // 현재 focusDistance 값 가져오기
+            x => depthOfField.focusDistance.value = x,     // 계산된 값을 focusDistance.value에 설정
+            0.1f,                                          // 목표 값 (0.1f로 설정)
+            0.5f                                             
+        );
+    }
+
+    public void BlurReturn()
+    {
+        DOTween.To(() => depthOfField.focusDistance.value,    // 현재 focusDistance 값
+            x => depthOfField.focusDistance.value = dof, // 변경된 값을 할당
+            dof,                                       // 목표 값
+            2f);                                 // 애니메이션 지속 시간
+    }
+    
     private void Awake()
     {
         if (!instance)
@@ -53,7 +101,13 @@ public class GameManager : MonoBehaviour
 
     private void PlayerOnloopPointReached(VideoPlayer source)
     {
+        ShowResult();
+    }
+
+    public void ShowResult()
+    {
         result.ShowResult(score);
+
     }
 
     private void OnEnable()

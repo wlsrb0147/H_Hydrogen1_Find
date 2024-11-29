@@ -59,7 +59,7 @@ public class LoadingControl : MonoBehaviour
     private void OnPrepareCompleted(VideoPlayer source)
     {
         Debug.Log("Video prepared, starting map loading...");
-        GameController.LoadSceneProgress().Forget();
+        GameController.LoadSceneProgress();
         source.Play(); // 준비된 영상 재생
     }
 
