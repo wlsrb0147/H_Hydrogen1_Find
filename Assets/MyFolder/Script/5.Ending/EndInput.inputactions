@@ -1,0 +1,62 @@
+{
+    "name": "EndInput",
+    "maps": [
+        {
+            "name": "ReturnToMain",
+            "id": "f2057056-9279-47cf-9572-38ae0882bda2",
+            "actions": [
+                {
+                    "name": "GoToMain",
+                    "type": "Button",
+                    "id": "65075196-da73-4fbf-8202-decb4d94e84e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "e4fd7fb5-c9e9-409c-87d2-09ec11251eb2",
+                    "path": "<Joystick>/stick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GoToMain",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "545ffa7f-4ac6-4809-92ea-7cb14429dfce",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "GoToMain",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "New Control Scheme",
+            "bindingGroup": "New Control Scheme",
+            "devices": [
+                {
+                    "devicePath": "<Joystick>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}

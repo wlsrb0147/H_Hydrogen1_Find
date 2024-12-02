@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.Video;
 
@@ -5,6 +6,13 @@ public class LoadingControl : MonoBehaviour
 {
     [SerializeField] private VideoPlayer[] players;
     [SerializeField] private RenderTexture renderTexture;
+    private AudioSource audioSource;
+    private bool isFinal;
+
+    private void Awake()
+    {
+        audioSource = GetComponent<AudioSource>();
+    }
 
     private void OnEnable()
     {
@@ -17,6 +25,8 @@ public class LoadingControl : MonoBehaviour
 
         VideoPlayer currentPlayer = null;
 
+        isFinal = false;
+        
         // currentScene에 따라 VideoPlayer 선택
         switch (GameController.currentScene)
         {
@@ -31,6 +41,8 @@ public class LoadingControl : MonoBehaviour
                 break;
             case 5:
                 currentPlayer = players[3];
+                audioSource.Play();
+                isFinal = true;
                 break;
         }
         
@@ -48,12 +60,21 @@ public class LoadingControl : MonoBehaviour
 
     private void OnDisable()
     {
+        if (isFinal)
+        {
+            RenderTexture.active = renderTexture;
+            GL.Clear(true, true, Color.black); // 검정 화면으로 지우기
+            RenderTexture.active = null;
+        }
+        
         // 모든 이벤트 제거
         foreach (var v in players)
         {
             v.prepareCompleted -= OnPrepareCompleted;
             v.loopPointReached -= OnVideoEnded;
         }
+        
+
     }
     
     private void OnPrepareCompleted(VideoPlayer source)
