@@ -93,6 +93,7 @@ MonoBehaviour:
   order: 0
   front: {fileID: 21300000, guid: 7f2b3e43663162744bf1884817e16707, type: 3}
   back: {fileID: 21300000, guid: 37b78fb94ce08d34090d1e59a8f18348, type: 3}
+  clip: {fileID: 8300000, guid: c83d46f2eb778dd408912b86586b9923, type: 3}
 --- !u!114 &7756597823982651828
 MonoBehaviour:
   m_ObjectHideFlags: 0

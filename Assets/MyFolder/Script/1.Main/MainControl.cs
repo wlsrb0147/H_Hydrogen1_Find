@@ -10,9 +10,14 @@ public class MainControl : MonoBehaviour
     [SerializeField] private RenderTexture renderTexture;
     [SerializeField] private VideoPlayer transition;
     [SerializeField] private GameObject objTransition;
+    [SerializeField] private AudioClip nextPage;
+    [SerializeField] private AudioClip nextScene;
+    
     private int maxVideoLength;
     private int currentVideoIndex;
-
+    private AudioSource audioSource;    
+    private GameManager gameManager;
+    
     private void Awake()
     {
         maxVideoLength = players.Length;
@@ -22,6 +27,8 @@ public class MainControl : MonoBehaviour
            transition.Prepare();
         }
 
+        gameManager = GameManager.instance;
+        audioSource = gameManager.audioSource;
         transition.time = 0;
     }
 
@@ -49,12 +56,14 @@ public class MainControl : MonoBehaviour
         {
             objTransition.SetActive(true);
             transition.Play();
+            audioSource.PlayOneShot(nextScene);
             Call().Forget();
         }
         else if (currentVideoIndex < maxVideoLength)
         {
             players[currentVideoIndex].targetTexture = renderTexture;
             players[currentVideoIndex].Play();
+            audioSource.PlayOneShot(nextPage);
         }
     }
 

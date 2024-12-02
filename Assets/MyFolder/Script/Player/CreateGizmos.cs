@@ -24,6 +24,9 @@ public class CreateGizmos : MonoBehaviour
     private PlayerScr playerScr;    
     
     [SerializeField] private Transform[] targetObject;
+    
+    private AudioSource audioSource;
+    [SerializeField] private AudioClip shutterSound;
 
     private void Awake()
     {
@@ -36,6 +39,7 @@ public class CreateGizmos : MonoBehaviour
         cameraTransform = cam.transform;
         
         gameManager = GameManager.instance;
+        audioSource = gameManager.audioSource;
         playerScr = GetComponent<PlayerScr>();
         
         // LineRenderer 설정
@@ -99,12 +103,10 @@ public class CreateGizmos : MonoBehaviour
 
     public void CheckObject()
     {
-
         for (int i = 0; i < targetObject.Length; i++)
         {
             if ( targetObject[i] == null || !targetObject[i].gameObject.activeInHierarchy)
             {
-                
                 continue;
             }
             Vector3 viewportPoint = cam.WorldToViewportPoint(targetObject[i].position);
@@ -116,13 +118,15 @@ public class CreateGizmos : MonoBehaviour
                 Debug.Log("오브젝트가 카메라의 특정 범위 내에 있습니다.");
                 Sprite spr = CaptureAndSaveSprite();
                 gameManager.AddScore();
-                
+                Debug.Log("PlayOneShot");
+                audioSource.PlayOneShot(shutterSound);
                 // 팝업 떠야함
                 BlurAndPopUp(i,spr).Forget();
                 
                 //roy(v.gameObject);
-                targetObject[i].gameObject.SetActive(false);
+                //targetObject[i].gameObject.SetActive(false);
             }
+            
             else
             {
                 Debug.Log("오브젝트가 범위 밖에 있습니다.");
@@ -137,7 +141,7 @@ public class CreateGizmos : MonoBehaviour
     private async UniTaskVoid BlurAndPopUp(int x, Sprite sprite)
     {
         await UniTask.Delay(500);
-        gameManager.BlurDepth();
+        gameManager.BlurDepthAndBlack();
         await UniTask.Delay(333);
         popups[x].gameObject.SetActive(true);
         popups[x].SetImage(sprite);
@@ -153,6 +157,7 @@ public class CreateGizmos : MonoBehaviour
             {
                 v.DisableObject();
                 gameManager.TimerResume();
+                gameManager.BlackEffectReturn();
             }
         }
 

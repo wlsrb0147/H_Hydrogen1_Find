@@ -19,7 +19,46 @@
                 {
                     "name": "",
                     "id": "caa89572-1f42-48b8-a7da-ac7d8873ef2a",
-                    "path": "<Keyboard>/rightArrow",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        },
+        {
+            "name": "Game",
+            "id": "3cc3f118-81f6-4bcd-8559-360964855833",
+            "actions": [
+                {
+                    "name": "Right",
+                    "type": "Button",
+                    "id": "7a655e97-0b73-4f87-bcec-53907ed2f99a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "a201be3d-0068-4cda-9767-2a55032dd880",
+                    "path": "<Keyboard>/d",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Right",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "cc2c9ef6-e60e-40a3-8451-27d51aacbe8c",
+                    "path": "<Joystick>/stick/right",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
@@ -35,6 +74,22 @@
             "name": "New Control Scheme",
             "bindingGroup": "New Control Scheme",
             "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        },
+        {
+            "name": "Real",
+            "bindingGroup": "Real",
+            "devices": [
+                {
+                    "devicePath": "<Joystick>",
+                    "isOptional": false,
+                    "isOR": false
+                },
                 {
                     "devicePath": "<Keyboard>",
                     "isOptional": false,

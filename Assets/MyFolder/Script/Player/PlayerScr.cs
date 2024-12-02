@@ -43,7 +43,12 @@ public class PlayerScr : MonoBehaviour
     private bool isFailed;
     private bool canControl;
     [SerializeField] private Selected[] selected;
+    [SerializeField] private AudioClip moveSound;
+    [SerializeField] private AudioClip selectSound;
     private bool isGiveUp = true;
+    
+    private GameManager gameManager;
+    private AudioSource audioSource;
     
     // 1. isFailed가 true일 때, 모든 입력 막음
     // 2. canControl이 true일 때, 조작 가능해짐
@@ -69,6 +74,8 @@ public class PlayerScr : MonoBehaviour
         
         Cursor.visible = false; 
         createGizmos = GetComponent<CreateGizmos>();
+        gameManager = GameManager.instance;
+        audioSource = gameManager.audioSource;
     }
     
     public void OnClearCheat(InputAction.CallbackContext context)
@@ -99,15 +106,24 @@ public class PlayerScr : MonoBehaviour
         {
             if (input.x < 0)
             {
-                selected[0].ToggleImage(true);
-                selected[1].ToggleImage(false);
-                isGiveUp = true;
+                if (!isGiveUp)
+                {
+                    selected[0].ToggleImage(true);
+                    selected[1].ToggleImage(false);
+                    audioSource.PlayOneShot(moveSound);
+                    isGiveUp = true;
+                }
+            
             }
             else if (input.x > 0)
             {
-                selected[1].ToggleImage(true);
-                selected[0].ToggleImage(false);
-                isGiveUp = false;
+                if (isGiveUp)
+                {
+                    selected[1].ToggleImage(true);
+                    selected[0].ToggleImage(false);
+                    audioSource.PlayOneShot(moveSound);
+                    isGiveUp = false;
+                }
             }
         }
     }
@@ -146,7 +162,7 @@ public class PlayerScr : MonoBehaviour
 
     public void OnUp(InputAction.CallbackContext context)
     {
-        
+        return;
         if (context.performed) // 키가 눌러져 있을 때
         {
             moveDirection2 = Vector3.up;
@@ -160,7 +176,7 @@ public class PlayerScr : MonoBehaviour
     // 아래로 이동 (E)
     public void OnDown(InputAction.CallbackContext context)
     {
-        
+        return;
         if (context.performed) // 키가 눌러져 있을 때
         {
             moveDirection2 = Vector3.down;
@@ -184,11 +200,11 @@ public class PlayerScr : MonoBehaviour
     
     public void OnShot(InputAction.CallbackContext context)
     {
-            // 입력이 시작될 때
+            /*// 입력이 시작될 때
             if (context.started && !is50FOV  )
             {
                 GameController.ReloadScene();
-            }
+            }*/
         
     }
     
@@ -250,17 +266,21 @@ public class PlayerScr : MonoBehaviour
         }
         else
         {
-            if (isGiveUp)
-            {
-                GameController.GoToTitle();
-            }
-            else
-            {
-                GameController.ReloadScene();
-            }
+            audioSource.PlayOneShot(selectSound);
+            Invoke(nameof(LoadNext),0.3f); 
         }
+    }
 
-
+    private void LoadNext()
+    {
+        if (isGiveUp)
+        {
+            GameController.GoToTitle();
+        }
+        else
+        {
+            GameController.ReloadScene();
+        }
     }
 
     private async UniTaskVoid StartZoom(bool is50FOV2)

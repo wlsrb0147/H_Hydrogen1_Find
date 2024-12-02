@@ -18,10 +18,14 @@ public class MoveAndFlip : MonoBehaviour, IPointerClickHandler
     
     private Image image;
     private bool isFlipped;
+    private AudioSource source;
+    [SerializeField] private AudioClip clip;
+    
 
     private void Awake()
     {
         gameManager = GameManager.instance;
+        source = gameManager.audioSource;
         rectTransform = GetComponent<RectTransform>();
         image = GetComponent<Image>();
         pos = gameManager.odd[order];
@@ -47,9 +51,10 @@ public class MoveAndFlip : MonoBehaviour, IPointerClickHandler
     
     public void FlipCard()
     {
+        source.PlayOneShot(clip);
         // DOTween Sequence 생성
         Sequence flipSequence = DOTween.Sequence();
-
+        
         // 1단계: 0도에서 90도까지 회전
         flipSequence.Append(rectTransform.DORotate(new Vector3(0, 90, 0), 0.2f)
             .SetEase(Ease.InOutQuad));

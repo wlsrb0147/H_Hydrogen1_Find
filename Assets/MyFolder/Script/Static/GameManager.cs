@@ -23,13 +23,36 @@ public class GameManager : MonoBehaviour
     private Result result;
 
     [NonSerialized] public float[] odd = { -460, -230, 0, 230, 460 };
+    
+    private AlphaControl blackEffect;
+    public AudioSource audioSource;
+    
+    private Tweener activeTweener;
 
-
+    public void SetResult(Result result)
+    {
+        this.result = result;
+    }
+    
+    public void SetbackEffect(AlphaControl blackEffect)
+    {
+        this.blackEffect = blackEffect;
+    }
+    
     public void SetPPvolume(Volume volume)
     {
         PPvolume = volume;
         PPvolume.profile.TryGet(out depthOfField);
         dof = depthOfField.focusDistance.value;
+    }
+    public void SetTimer(VideoPlayer videoPlayer)
+    {
+        timerPlayer = videoPlayer;
+        timerPlayer.loopPointReached += PlayerOnloopPointReached;
+    }
+    public int GetScore()
+    {
+        return score;
     }
 
     public void TimerPause()
@@ -37,33 +60,6 @@ public class GameManager : MonoBehaviour
         timerPlayer.Pause();
     }
 
-    public void TimerResume()
-    {
-        timerPlayer.Play();
-    }
-
-    public DepthOfField GetDepthOfField()
-    {
-        return depthOfField;
-    }
-
-    public void BlurDepth()
-    {
-        DOTween.To(
-            () => depthOfField.focusDistance.value,        // 현재 focusDistance 값 가져오기
-            x => depthOfField.focusDistance.value = x,     // 계산된 값을 focusDistance.value에 설정
-            0.1f,                                          // 목표 값 (0.1f로 설정)
-            0.5f                                             
-        );
-    }
-
-    public void BlurReturn()
-    {
-        DOTween.To(() => depthOfField.focusDistance.value,    // 현재 focusDistance 값
-            x => depthOfField.focusDistance.value = dof, // 변경된 값을 할당
-            dof,                                       // 목표 값
-            2f);                                 // 애니메이션 지속 시간
-    }
     
     private void Awake()
     {
@@ -81,12 +77,46 @@ public class GameManager : MonoBehaviour
 
         SceneManager.sceneLoaded += SceneManagerOnsceneLoaded;
     }
-
-    public void SetTimer(VideoPlayer videoPlayer)
+    public void TimerResume()
     {
-        timerPlayer = videoPlayer;
-        timerPlayer.loopPointReached += PlayerOnloopPointReached;
+        timerPlayer.Play();
     }
+
+    public void BlurDepthAndBlack()
+    {
+        if (activeTweener != null && activeTweener.IsActive())
+        {
+            activeTweener.Kill();
+        }
+        
+        activeTweener = DOTween.To(
+            () => depthOfField.focusDistance.value,        // 현재 focusDistance 값 가져오기
+            x => depthOfField.focusDistance.value = x,     // 계산된 값을 focusDistance.value에 설정
+            0.1f,                                          // 목표 값 (0.1f로 설정)
+            0.5f                                             
+        );
+        blackEffect.gameObject.SetActive(false);
+        blackEffect.gameObject.SetActive(true);
+    }
+
+    public void BlackEffectReturn()
+    {
+        blackEffect.DisableWithFade();
+    }
+
+    public void BlurReturn()
+    {
+        if (activeTweener != null && activeTweener.IsActive())
+        {
+            activeTweener.Kill();
+        }
+        
+        activeTweener = DOTween.To(() => depthOfField.focusDistance.value,    // 현재 focusDistance 값
+            x => depthOfField.focusDistance.value = dof, // 변경된 값을 할당
+            dof,                                       // 목표 값
+            2f);                                 // 애니메이션 지속 시간
+    }
+
 
     private void SceneManagerOnsceneLoaded(Scene arg0, LoadSceneMode arg1)
     {
@@ -107,7 +137,6 @@ public class GameManager : MonoBehaviour
     public void ShowResult()
     {
         result.ShowResult(score);
-
     }
 
     private void OnEnable()
@@ -141,13 +170,5 @@ public class GameManager : MonoBehaviour
         ++score;
     }
 
-    public int GetScore()
-    {
-        return score;
-    }
 
-    public void SetResult(Result result)
-    {
-        this.result = result;
-    }
 }
