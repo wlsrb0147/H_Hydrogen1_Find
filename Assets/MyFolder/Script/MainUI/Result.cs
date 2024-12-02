@@ -13,8 +13,6 @@ public class Result : MonoBehaviour
     
     [SerializeField] private RenderTexture renderTexture;
     
-    
-    
     [SerializeField] private MoveAndFlip[] moveObjects;
 
     [SerializeField] private GameObject timer;
@@ -22,19 +20,25 @@ public class Result : MonoBehaviour
     
     [SerializeField] private Selected[] selected;
     
-    [SerializeField] private PlayerScr playerScr;
+    private PlayerScr playerScr;
     private GameManager gameManager;
     private AudioSource audioSource;
     [SerializeField] private AudioClip winClip;
     [SerializeField] private AudioClip loseClip;
     
+    
     private void Awake()
     {
         gameManager = GameManager.instance;
         gameManager.SetResult(this);
-        audioSource = gameManager.audioSource;
         winMovie.loopPointReached += WinMovieOnloopPointReached;
         loseMovie.loopPointReached += LoseMovieOnloopPointReached;
+    }
+
+    private void Start()
+    {
+        playerScr = gameManager.playerScr;
+        audioSource = gameManager.audioSource;
     }
 
     private void LoseMovieOnloopPointReached(VideoPlayer source)
@@ -58,14 +62,15 @@ public class Result : MonoBehaviour
     {
         // 타이머 꺼야함
         timer.SetActive(false);
- 
 
         if (score > 3)
         {
             WinProcess(gameManager.GetScore()).Forget();
+            playerScr.SetIsCleared(true);
         }
         else
         {
+            playerScr.SetIsPopup(true);
             audioSource.Stop();
             LoseGame();
             audioSource.PlayOneShot(loseClip);
@@ -83,6 +88,7 @@ public class Result : MonoBehaviour
         await UniTask.Delay(150);
         selected[1].gameObject.SetActive(true);
         selected[1].ToggleImage(false);
+        playerScr.SetIsPopup(false);
         playerScr.SetIsFailedTrue();
     }
     

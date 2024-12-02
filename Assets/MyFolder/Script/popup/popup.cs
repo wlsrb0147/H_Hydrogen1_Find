@@ -29,14 +29,19 @@ public class popup : MonoBehaviour
     {
         playerScr = gameManager.playerScr;
         playerScr.SetIsPopup(true);
-        rectTransform.DOAnchorPos(Vector2.zero, 0.5f).SetEase(Ease.OutSine);
+        rectTransform.DOAnchorPos(Vector2.zero, 0.5f)
+            .SetEase(Ease.OutSine).
+            OnComplete(() => playerScr.SetCanClosePopup(true));
         source.PlayOneShot(opened);
     }
 
     public void DisableObject()
     {
+        
         hydrogen.SetActive(false);
+        playerScr.SetCanClosePopup(false);
         playerScr.SetIsPopup(false);
+        playerScr.SetSuccessPicture(false);
         source.PlayOneShot(closed);
         rectTransform.DOAnchorPos(originalPosition, 0.5f) // 0.5초 동안 애니메이션 실행
             .SetEase(Ease.InSine)                         // Ease 설정

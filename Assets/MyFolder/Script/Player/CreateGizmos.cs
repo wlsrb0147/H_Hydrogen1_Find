@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 
@@ -16,9 +17,9 @@ public class CreateGizmos : MonoBehaviour
     private readonly Vector3[] frustumCorners2 = new Vector3[4];
     
     private readonly Vector3[] adjustedFrustumCorners = new Vector3[4];
-    private readonly Vector3[] lineRendererCorners = new Vector3[4];
+    //private readonly Vector3[] lineRendererCorners = new Vector3[4];
     private Transform cameraTransform;
-    private LineRenderer lineRenderer;
+   // private LineRenderer lineRenderer;
 
     private GameManager gameManager;
     private PlayerScr playerScr;    
@@ -39,20 +40,25 @@ public class CreateGizmos : MonoBehaviour
         cameraTransform = cam.transform;
         
         gameManager = GameManager.instance;
-        audioSource = gameManager.audioSource;
-        playerScr = GetComponent<PlayerScr>();
+
         
         // LineRenderer 설정
-        lineRenderer = GetComponent<LineRenderer>();
+        /*lineRenderer = GetComponent<LineRenderer>();
         lineRenderer.positionCount = 5; // 사각형의 네 꼭짓점과 첫 번째 점을 연결하여 닫기
         lineRenderer.loop = false; // 사각형을 닫음
         lineRenderer.startWidth = 0.02f; // 선의 두께 설정
         lineRenderer.endWidth = 0.02f;
-        lineRenderer.useWorldSpace = true; // 월드 좌표 사용
+        lineRenderer.useWorldSpace = true; // 월드 좌표 사용*/
 
     }
 
+    private void Start()
+    {
+        audioSource = gameManager.audioSource;
+        playerScr = gameManager.playerScr;
+    }
 
+/*
     private void Update()
     {
         cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
@@ -76,10 +82,10 @@ public class CreateGizmos : MonoBehaviour
 
             adjustedFrustumCorners[i] = cameraPosition + adjustedDirection;
             lineRendererCorners[i] = cameraPosition + adjustedDirection2;
-        }
+        }*/
             
         // LineRenderer에 사각형의 꼭짓점 설정
-        if (showGizmo)
+        /*if (showGizmo)
         {
             lineRenderer.enabled = true;
             for (int i = 0; i < 4; i++)
@@ -91,16 +97,17 @@ public class CreateGizmos : MonoBehaviour
         else
         {
             lineRenderer.enabled = false;
-        }
+        }*/
         
-        float boxWidth = Vector3.Distance(adjustedFrustumCorners[0], adjustedFrustumCorners[3]) / 2;
+        /*float boxWidth = Vector3.Distance(adjustedFrustumCorners[0], adjustedFrustumCorners[3]) / 2;
         float boxHeight = Vector3.Distance(adjustedFrustumCorners[0], adjustedFrustumCorners[1]) / 2;
         
         Debug.DrawRay(cameraPosition, cameraTransform.forward * frustumLength, Color.red);
         Debug.DrawRay(cameraPosition, cameraTransform.right * boxWidth, Color.green);
         Debug.DrawRay(cameraPosition, cameraTransform.up * boxHeight, Color.blue);
     }
-
+*/
+        
     public void CheckObject()
     {
         for (int i = 0; i < targetObject.Length; i++)
@@ -115,6 +122,7 @@ public class CreateGizmos : MonoBehaviour
                 viewportPoint.y is >= 0.21f and <= 0.79f &&
                 viewportPoint.z > 0)
             {
+                playerScr.SetSuccessPicture(true);
                 Debug.Log("오브젝트가 카메라의 특정 범위 내에 있습니다.");
                 Sprite spr = CaptureAndSaveSprite();
                 gameManager.AddScore();
@@ -122,7 +130,6 @@ public class CreateGizmos : MonoBehaviour
                 audioSource.PlayOneShot(shutterSound);
                 // 팝업 떠야함
                 BlurAndPopUp(i,spr).Forget();
-                
                 //roy(v.gameObject);
                 //targetObject[i].gameObject.SetActive(false);
             }
@@ -131,10 +138,6 @@ public class CreateGizmos : MonoBehaviour
             {
                 Debug.Log("오브젝트가 범위 밖에 있습니다.");
             }
-        }
-        foreach (var v in targetObject)
-        {
-            
         }
     }
 
@@ -170,6 +173,23 @@ public class CreateGizmos : MonoBehaviour
     
     private Sprite CaptureAndSaveSprite()
     {
+        cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength, Camera.MonoOrStereoscopicEye.Mono, frustumCorners);
+        cam.CalculateFrustumCorners(new Rect(0, 0, 1, 1), frustumLength2, Camera.MonoOrStereoscopicEye.Mono, frustumCorners2);
+        Vector3 cameraPosition = cameraTransform.position;
+
+        for (int i = 0; i < 4; i++)
+        {
+            adjustedFrustumCorners[i] = cameraTransform.TransformPoint(frustumCorners[i]);
+
+            Vector3 cameraToCorner = adjustedFrustumCorners[i] - cameraPosition;
+            Vector3 rightComponent = cameraTransform.right * (Vector3.Dot(cameraToCorner, cameraTransform.right) * widthScale);
+            Vector3 upComponent = cameraTransform.up * (Vector3.Dot(cameraToCorner, cameraTransform.up) * heightScale);
+            Vector3 adjustedDirection = rightComponent + upComponent + cameraTransform.forward * Vector3.Dot(cameraToCorner, cameraTransform.forward);
+            
+            adjustedFrustumCorners[i] = cameraPosition + adjustedDirection;
+        }
+        
+        
         // RenderTexture 생성 및 설정
         RenderTexture rt = new RenderTexture(Screen.width, Screen.height, 24);
         cam.targetTexture = rt;
@@ -210,7 +230,7 @@ public class CreateGizmos : MonoBehaviour
     }
     
 
-    private void OnDrawGizmos()
+    /*private void OnDrawGizmos()
     {
         // cameraTransform이나 다른 변수가 null인지 확인
         if (cameraTransform == null || adjustedFrustumCorners == null || adjustedFrustumCorners.Length == 0)
@@ -227,5 +247,5 @@ public class CreateGizmos : MonoBehaviour
         Gizmos.DrawLine(adjustedFrustumCorners[2], adjustedFrustumCorners[3]);
         Gizmos.DrawLine(adjustedFrustumCorners[3], adjustedFrustumCorners[0]);
 
-    }
+    }*/
 }

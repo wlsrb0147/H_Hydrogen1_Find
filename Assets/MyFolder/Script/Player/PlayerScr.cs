@@ -1,3 +1,4 @@
+using System;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -44,9 +45,11 @@ public class PlayerScr : MonoBehaviour
     // 최종권한
     private bool canControl = true;
     private bool canZoom = true;
+    private bool canClosePopup;
     
     // 게임실패 특수조작
     private bool isFailed;
+    private bool isCleared;
     
     [SerializeField] private Selected[] selected;
     [SerializeField] private AudioClip moveSound;
@@ -55,20 +58,33 @@ public class PlayerScr : MonoBehaviour
     
     private GameManager gameManager;
     private AudioSource audioSource;
+    private ZoomScr zoomScr;
     
     // 1. isFailed가 true일 때, 모든 입력 막음
     // 2. canControl이 true일 때, 조작 가능해짐
 
+    public void SetCanClosePopup(bool value)
+    {
+        canClosePopup = value;
+    }
+    
     public void SetIsZooming(bool value)
     {
         isZooming = value;
         SetCanControl();
+        SetCanZoom();
     }
     
     public void SetIsPopup(bool value)
     {
         isPopup = value;
         SetCanControl();
+        SetCanZoom();
+    }
+
+    public void SetIsCleared(bool value)
+    {
+        isCleared = value;
     }
 
     public void SetSuccessPicture(bool value)
@@ -80,25 +96,20 @@ public class PlayerScr : MonoBehaviour
     public void SetIsFailed(bool value)
     {
         isFailed = value;
+        SetCanControl();
         SetCanZoom();
     }
-    /// <summary>
-    /// /////////////////
-    /// </summary>
+    
     private void SetCanControl()
     {
         // 줌 하는중 아니고, 팝업 뜨고있지 않을때 조작가능
-        canControl = !isZooming && !isPopup;
+        canControl = !isPopup;
     }
 
     private void SetCanZoom()
     {
-        // 줌 하고있지 않고, 사진촬영 실패했을 때, 게임 실패하지 않았을 때 줌 가능
-        canZoom = !isZooming && !successPicture && !isFailed;
+        canZoom = !isZooming && !successPicture && !isPopup;
     }
-    
-    
-    
     
     public void SetIsFailedTrue()
     {
@@ -117,10 +128,17 @@ public class PlayerScr : MonoBehaviour
         Cursor.visible = false; 
         createGizmos = GetComponent<CreateGizmos>();
         gameManager = GameManager.instance;
-        audioSource = gameManager.audioSource;
+
         gameManager.playerScr = this;
     }
-    
+
+    private void Start()
+    {
+        zoomScr = gameManager.zoomScr;
+        audioSource = gameManager.audioSource;
+        zoomScr.gameObject.SetActive(true);
+    }
+
     public void OnClearCheat(InputAction.CallbackContext context)
     {
         if (context.performed) // 버튼이 눌렸을 때만 실행
@@ -248,7 +266,7 @@ public class PlayerScr : MonoBehaviour
     
     private void Move(Vector2 input)
     {
-        if (input != Vector2.zero && !isZooming)
+        if (input != Vector2.zero && !isFailed)
         {
             input *= defaultSpeed * zoomSpeed;
             Vector3 currentRotation = cam.transform.eulerAngles;
@@ -275,7 +293,6 @@ public class PlayerScr : MonoBehaviour
                 currentRotation.x -= input.y; // X축 회전 (수직 회전)
             }
             
-            
             cam.transform.eulerAngles = new Vector3(currentRotation.x, currentRotation.y, 0f);
         }
     }
@@ -287,21 +304,22 @@ public class PlayerScr : MonoBehaviour
         // 미션 실패 아닐 때
         if (!isFailed)
         {
-            // 컨트롤 가능하고, 줌 도중 아님
-            if (canControl && !isZooming )
+            // 줌이 가능할 때
+            if (canZoom)
             {
+                zoomScr.ToggleZoom();
                 StartZoom(is50FOV).Forget();
                 is50FOV = !is50FOV;
                 
-                if (is50FOV)
+                if (is50FOV && !isCleared)
                 {
                     createGizmos.CheckObject();
                 }
             }
-            else if (!isZooming)
+            // 줌이 불가능하고, 팝업닫기가 가능할 때
+            else if (canClosePopup)
             {
                 createGizmos.DisablePopup();
-                canControl = true;
             }
         }
         else
@@ -325,6 +343,8 @@ public class PlayerScr : MonoBehaviour
 
     private async UniTaskVoid StartZoom(bool is50FOV2)
     {
+        SetIsZooming(true);
+        
         float t = 0;
         float duration = 0.5f;
         float delta = 1/duration;
@@ -333,7 +353,6 @@ public class PlayerScr : MonoBehaviour
         
         float current = cam.fieldOfView;
         Color col = imgZoom.color;
-
         
         //만약 줌 하는 중이라면 초기값 사이즈 1, 알파 0
         if (is50FOV2)
@@ -342,8 +361,6 @@ public class PlayerScr : MonoBehaviour
             imgZoom.color = col;
             rectZoom.localScale = Vector3.one;
         }
-        
-        isZooming = true;
         
         while (t < 1)
         {
@@ -380,6 +397,6 @@ public class PlayerScr : MonoBehaviour
 
         rectZoom.localScale = Vector3.one;
         cam.fieldOfView = is50FOV2 ? 50f : 20f;
-        isZooming = false;
+        SetIsZooming(false);
     }
 }
