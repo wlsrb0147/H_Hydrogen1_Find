@@ -14,6 +14,7 @@ public class popup : MonoBehaviour
     
     private AudioSource source;
     private GameManager gameManager;
+    private PlayerScr playerScr;
 
     private void Awake()
     {
@@ -26,6 +27,8 @@ public class popup : MonoBehaviour
     
     private void OnEnable()
     {
+        playerScr = gameManager.playerScr;
+        playerScr.SetIsPopup(true);
         rectTransform.DOAnchorPos(Vector2.zero, 0.5f).SetEase(Ease.OutSine);
         source.PlayOneShot(opened);
     }
@@ -33,6 +36,7 @@ public class popup : MonoBehaviour
     public void DisableObject()
     {
         hydrogen.SetActive(false);
+        playerScr.SetIsPopup(false);
         source.PlayOneShot(closed);
         rectTransform.DOAnchorPos(originalPosition, 0.5f) // 0.5초 동안 애니메이션 실행
             .SetEase(Ease.InSine)                         // Ease 설정

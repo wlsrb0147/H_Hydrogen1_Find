@@ -29,6 +29,16 @@ public class GameManager : MonoBehaviour
     
     private Tweener activeTweener;
 
+    private ZoomScr zoomScr;
+    
+    public PlayerScr playerScr;
+    
+
+    public void SetZoomScr(ZoomScr zoomScr)
+    {
+        this.zoomScr = zoomScr;
+    }
+    
     public void SetResult(Result result)
     {
         this.result = result;

@@ -9,13 +9,10 @@ public class PlayerScr : MonoBehaviour
     private Camera cam;
     private Vector3 moveDirection = Vector3.zero;
     private bool is50FOV = true;
-    private bool isZooming;
     [SerializeField] private GameObject objZoom;
     private Image imgZoom;
     private RectTransform rectZoom;
-
-    private bool isBlocked;
- 
+    
     private readonly Vector3 targetScale = new(1.15f, 1.15f, 1f);
     [SerializeField] private float defaultSpeed = 1f;
     [SerializeField] private float zoomSpeed = 0.5f;
@@ -40,8 +37,17 @@ public class PlayerScr : MonoBehaviour
     private CreateGizmos createGizmos;
     
     // 실패 관련
+    private bool isZooming;
+    private bool successPicture;
+    private bool isPopup;
+    
+    // 최종권한
+    private bool canControl = true;
+    private bool canZoom = true;
+    
+    // 게임실패 특수조작
     private bool isFailed;
-    private bool canControl;
+    
     [SerializeField] private Selected[] selected;
     [SerializeField] private AudioClip moveSound;
     [SerializeField] private AudioClip selectSound;
@@ -52,18 +58,54 @@ public class PlayerScr : MonoBehaviour
     
     // 1. isFailed가 true일 때, 모든 입력 막음
     // 2. canControl이 true일 때, 조작 가능해짐
-    
 
+    public void SetIsZooming(bool value)
+    {
+        isZooming = value;
+        SetCanControl();
+    }
+    
+    public void SetIsPopup(bool value)
+    {
+        isPopup = value;
+        SetCanControl();
+    }
+
+    public void SetSuccessPicture(bool value)
+    {
+        successPicture = value;
+        SetCanZoom();
+    }
+
+    public void SetIsFailed(bool value)
+    {
+        isFailed = value;
+        SetCanZoom();
+    }
+    /// <summary>
+    /// /////////////////
+    /// </summary>
+    private void SetCanControl()
+    {
+        // 줌 하는중 아니고, 팝업 뜨고있지 않을때 조작가능
+        canControl = !isZooming && !isPopup;
+    }
+
+    private void SetCanZoom()
+    {
+        // 줌 하고있지 않고, 사진촬영 실패했을 때, 게임 실패하지 않았을 때 줌 가능
+        canZoom = !isZooming && !successPicture && !isFailed;
+    }
+    
+    
+    
+    
     public void SetIsFailedTrue()
     {
         isFailed = true;
-        Invoke(nameof(SetCanControlTrue),1f);
+        // 1초 뒤 조작가능
     }
-
-    private void SetCanControlTrue()
-    {
-        canControl = true;
-    }
+    
     
     private void Awake()
     {
@@ -76,6 +118,7 @@ public class PlayerScr : MonoBehaviour
         createGizmos = GetComponent<CreateGizmos>();
         gameManager = GameManager.instance;
         audioSource = gameManager.audioSource;
+        gameManager.playerScr = this;
     }
     
     public void OnClearCheat(InputAction.CallbackContext context)
@@ -88,7 +131,7 @@ public class PlayerScr : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if (isBlocked) return;
+        if (!canControl) return;
 
         if (!isFailed)
         {
@@ -126,11 +169,6 @@ public class PlayerScr : MonoBehaviour
                 }
             }
         }
-    }
-
-    public void SetIsBlocked(bool isBlocked)
-    {
-        this.isBlocked = isBlocked;
     }
 
     private void Update()
@@ -246,9 +284,11 @@ public class PlayerScr : MonoBehaviour
     {
         if (!context.performed) return;
         
+        // 미션 실패 아닐 때
         if (!isFailed)
         {
-            if (!isBlocked)
+            // 컨트롤 가능하고, 줌 도중 아님
+            if (canControl && !isZooming )
             {
                 StartZoom(is50FOV).Forget();
                 is50FOV = !is50FOV;
@@ -258,10 +298,10 @@ public class PlayerScr : MonoBehaviour
                     createGizmos.CheckObject();
                 }
             }
-            else
+            else if (!isZooming)
             {
-                isBlocked = false;
                 createGizmos.DisablePopup();
+                canControl = true;
             }
         }
         else

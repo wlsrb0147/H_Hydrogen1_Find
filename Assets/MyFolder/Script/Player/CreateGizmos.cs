@@ -140,13 +140,12 @@ public class CreateGizmos : MonoBehaviour
 
     private async UniTaskVoid BlurAndPopUp(int x, Sprite sprite)
     {
-        await UniTask.Delay(500);
+        await UniTask.Delay(300);
         gameManager.BlurDepthAndBlack();
         await UniTask.Delay(333);
         popups[x].gameObject.SetActive(true);
         popups[x].SetImage(sprite);
         gameManager.TimerPause();
-        playerScr.SetIsBlocked(true);
     }
 
     public void DisablePopup()
