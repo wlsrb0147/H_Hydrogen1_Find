@@ -6,9 +6,18 @@
             "id": "f2057056-9279-47cf-9572-38ae0882bda2",
             "actions": [
                 {
-                    "name": "GoToMain",
+                    "name": "PressButton",
                     "type": "Button",
                     "id": "65075196-da73-4fbf-8202-decb4d94e84e",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "playOnTwo",
+                    "type": "Button",
+                    "id": "c51dbf91-2af8-4f3d-8f13-2c7673e9d673",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -19,22 +28,44 @@
                 {
                     "name": "",
                     "id": "e4fd7fb5-c9e9-409c-87d2-09ec11251eb2",
-                    "path": "<Joystick>/stick/right",
+                    "path": "<Joystick>/trigger",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "GoToMain",
+                    "action": "PressButton",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
                 {
                     "name": "",
                     "id": "545ffa7f-4ac6-4809-92ea-7cb14429dfce",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PressButton",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "b79cbb1a-f9b6-4f88-b2c9-9017a11dae68",
+                    "path": "<Joystick>/stick/right",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "playOnTwo",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4543de53-24b6-45a8-af09-fd8db126fd91",
                     "path": "<Keyboard>/d",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "GoToMain",
+                    "action": "playOnTwo",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

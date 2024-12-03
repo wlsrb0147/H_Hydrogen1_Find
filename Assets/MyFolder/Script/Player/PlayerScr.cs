@@ -125,7 +125,6 @@ public class PlayerScr : MonoBehaviour
         imgZoom = objZoom.GetComponent<Image>();
         rectZoom = objZoom.GetComponent<RectTransform>();
         
-        Cursor.visible = false; 
         createGizmos = GetComponent<CreateGizmos>();
         gameManager = GameManager.instance;
 

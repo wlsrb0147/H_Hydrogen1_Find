@@ -17,9 +17,12 @@ public class MainControl : MonoBehaviour
     private int currentVideoIndex;
     private AudioSource audioSource;    
     private GameManager gameManager;
+
+    private bool canControl = true;
     
     private void Awake()
     {
+        Cursor.visible = false; 
         maxVideoLength = players.Length;
         objTransition.SetActive(false);
         if (!transition.isPrepared)
@@ -47,7 +50,9 @@ public class MainControl : MonoBehaviour
 
     private void OnRight(InputValue value)
     {
-        if (currentVideoIndex >= maxVideoLength)  return;
+        if (currentVideoIndex >= maxVideoLength || !canControl)  return;
+        
+        canControl = false; 
         
         players[currentVideoIndex].Stop();
         players[currentVideoIndex].targetTexture = null;
@@ -64,7 +69,25 @@ public class MainControl : MonoBehaviour
             players[currentVideoIndex].targetTexture = renderTexture;
             players[currentVideoIndex].Play();
             audioSource.PlayOneShot(nextPage);
+
+            switch (currentVideoIndex)
+            {
+                case 1:
+                    Invoke(nameof(SetCanControlTrue),6f);
+                    break;
+                case 2:
+                    Invoke(nameof(SetCanControlTrue),9.5f);
+                    break;
+                case 3:
+                    Invoke(nameof(SetCanControlTrue),5f);
+                    break;
+            }
         }
+    }
+
+    private void SetCanControlTrue()
+    {
+        canControl = true;
     }
 
     private async UniTaskVoid Call()

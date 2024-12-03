@@ -61,6 +61,11 @@ public class GameController : MonoBehaviour
         }
     }
 
+    public static Sprite GetSprite(int num)
+    {
+        return SavedImage[num];
+    }
+
     public static async void ReloadScene()
     {
         _currentSavedImage = (currentScene - 2) * 5;
