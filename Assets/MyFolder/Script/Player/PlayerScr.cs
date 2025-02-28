@@ -1,8 +1,17 @@
 using System;
+using System.IO;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
+
+
+[Serializable]
+public class Settings
+{
+    public float standardTime;
+    public float endingStandardTime;
+}
 
 public class PlayerScr : MonoBehaviour
 {
@@ -59,9 +68,30 @@ public class PlayerScr : MonoBehaviour
     private GameManager gameManager;
     private AudioSource audioSource;
     private ZoomScr zoomScr;
+
+    private float timer;
+    private float standardTime;
+    
+    private Settings settings;
     
     // 1. isFailed가 true일 때, 모든 입력 막음
     // 2. canControl이 true일 때, 조작 가능해짐
+    private T LoadJsonData<T>(string fileName)
+    {
+        string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+        filePath = filePath.Replace("\\", "/");
+
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath);
+            Debug.Log("Loaded JSON: " + json); // JSON 문자열 출력
+            T data = JsonUtility.FromJson<T>(json);
+            return data;
+        }
+
+        Debug.LogWarning("File does not exist!");
+        return default;
+    }
 
     public void SetCanClosePopup(bool value)
     {
@@ -120,6 +150,9 @@ public class PlayerScr : MonoBehaviour
     
     private void Awake()
     {
+        settings = LoadJsonData<Settings>("settings.json");
+        standardTime = settings.standardTime;
+        
         playerInput = GetComponent<PlayerInput>();
         cam = playerInput.camera ?? Camera.main;
         imgZoom = objZoom.GetComponent<Image>();
@@ -129,6 +162,8 @@ public class PlayerScr : MonoBehaviour
         gameManager = GameManager.instance;
 
         gameManager.playerScr = this;
+
+        timer = standardTime;
     }
 
     private void Start()
@@ -190,6 +225,14 @@ public class PlayerScr : MonoBehaviour
 
     private void Update()
     {
+        timer -= Time.deltaTime;
+
+        if (timer <= 0)
+        {
+            GameController.GoToTitle();
+        }
+        
+        
         if (Input.GetKeyDown(KeyCode.M))
         {
             Cursor. visible = !Cursor. visible;
@@ -211,7 +254,10 @@ public class PlayerScr : MonoBehaviour
     
     public void OnMove2(InputAction.CallbackContext context)
     {
-        // 기존 Vector2 값 받기
+        if (context.performed)
+        {
+            timer = standardTime;
+        }
         currentInput = context.ReadValue<Vector2>();
     }
 
@@ -246,21 +292,11 @@ public class PlayerScr : MonoBehaviour
     {
         if (context.performed || context.canceled ) // 키 입력과 키 해제 이벤트 처리
         {
+            timer = standardTime;
             Vector2 input = context.ReadValue<Vector2>();
             moveDirection.x = input.x;
             moveDirection.y = input.y;
         }
-    }
-
-    
-    public void OnShot(InputAction.CallbackContext context)
-    {
-            /*// 입력이 시작될 때
-            if (context.started && !is50FOV  )
-            {
-                GameController.ReloadScene();
-            }*/
-        
     }
     
     private void Move(Vector2 input)
@@ -298,7 +334,10 @@ public class PlayerScr : MonoBehaviour
     
     public void OnZoom(InputAction.CallbackContext context)
     {
+        
         if (!context.performed) return;
+        
+        timer = standardTime;
         
         // 미션 실패 아닐 때
         if (!isFailed)

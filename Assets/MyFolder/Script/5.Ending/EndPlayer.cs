@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ using Random = UnityEngine.Random;
 
 public class EndPlayer : MonoBehaviour
 {
+    private Settings settings;
     [SerializeField] private RenderTexture renderTexture;
     [SerializeField] private VideoPlayer player1;
     [SerializeField] private VideoPlayer player2;
@@ -20,11 +22,31 @@ public class EndPlayer : MonoBehaviour
 
     private bool canSkip;
     private bool isSecondVideo;
+    private float returnTime;
     
     private List<Sprite> sprites = new List<Sprite>();
 
+    private T LoadJsonData<T>(string fileName)
+    {
+        string filePath = Path.Combine(Application.streamingAssetsPath, fileName);
+        filePath = filePath.Replace("\\", "/");
+
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath);
+            Debug.Log("Loaded JSON: " + json); // JSON 문자열 출력
+            T data = JsonUtility.FromJson<T>(json);
+            return data;
+        }
+
+        Debug.LogWarning("File does not exist!");
+        return default;
+    }
+    
     private void Awake()
     {
+        settings = LoadJsonData<Settings>("settings.json");
+        returnTime = settings.endingStandardTime;
         audioSource = GetComponent<AudioSource>();
         audioSource.Play();
         player1.loopPointReached += Player1OnloopPointReached;
@@ -79,6 +101,8 @@ public class EndPlayer : MonoBehaviour
     {
         if (!context.performed) return;
         
+        returnTime = settings.endingStandardTime;
+        
         if (canSkip && !isSecondVideo)
         {
             PlayNextVideo();
@@ -92,13 +116,14 @@ public class EndPlayer : MonoBehaviour
         if (context.performed)
         {
             player2.playbackSpeed = 2;
+            returnTime = settings.endingStandardTime;
         }
 
         if (context.canceled)
         {
             player2.playbackSpeed = 1;
+            returnTime = settings.endingStandardTime;
         }
-
     }
 
     private void PlayNextVideo()
@@ -114,6 +139,16 @@ public class EndPlayer : MonoBehaviour
         foreach (var v in images)
         {
             v.gameObject.SetActive(false);
+        }
+    }
+
+    private void Update()
+    {
+        returnTime -= Time.deltaTime;
+
+        if (returnTime < 0)
+        {
+            GameController.LoadScene();
         }
     }
 }

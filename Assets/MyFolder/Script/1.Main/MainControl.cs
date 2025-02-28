@@ -19,6 +19,9 @@ public class MainControl : MonoBehaviour
     private GameManager gameManager;
 
     private bool canControl = true;
+
+    private float time;
+    private const float StandardTime = 40f;
     
     private void Awake()
     {
@@ -33,8 +36,21 @@ public class MainControl : MonoBehaviour
         gameManager = GameManager.instance;
         audioSource = gameManager.audioSource;
         transition.time = 0;
+
+        time = StandardTime;
     }
 
+    private void Update()
+    {
+        if (currentVideoIndex == 0) return;
+        
+        time -= Time.deltaTime;
+
+        if (time <=0)
+        {
+            GameController.GoToTitle();
+        }
+    }
 
     private void OnEnable()
     {
@@ -50,6 +66,8 @@ public class MainControl : MonoBehaviour
 
     private void OnRight(InputValue value)
     {
+        time = StandardTime;
+        
         if (currentVideoIndex >= maxVideoLength || !canControl)  return;
         
         canControl = false; 
