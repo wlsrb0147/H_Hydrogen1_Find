@@ -11,6 +11,7 @@ public class Settings
 {
     public float standardTime;
     public float endingStandardTime;
+    public float viewImageTime;
 }
 
 public class PlayerScr : MonoBehaviour
@@ -164,6 +165,8 @@ public class PlayerScr : MonoBehaviour
         gameManager.playerScr = this;
 
         timer = standardTime;
+        
+        createGizmos.SetInvokeTime(settings.viewImageTime);
     }
 
     private void Start()

@@ -84,8 +84,16 @@ public class CreateGizmos : MonoBehaviour
             
             else
             {
-                Debug.Log("오브젝트가 범위 밖에 있습니다.");
+                // Debug.Log("오브젝트가 범위 밖에 있습니다.");
             }
+        }
+    }
+
+    public void SetInvokeTime(float x)
+    {
+        foreach (var v in popups)
+        {
+            v.SetInvoke(x);
         }
     }
 

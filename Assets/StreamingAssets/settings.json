@@ -1,4 +1,5 @@
 {
   "standardTime" : "30",
-  "endingStandardTime" : "40"
+  "endingStandardTime" : "40",
+  "viewImageTime" : 3
 }

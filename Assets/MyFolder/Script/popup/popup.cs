@@ -16,6 +16,24 @@ public class popup : MonoBehaviour
     private GameManager gameManager;
     private PlayerScr playerScr;
 
+    private float invokeTime;
+
+    [SerializeField] private Button buttonImage;
+    private ColorBlock colorBlock;
+    private ColorBlock originalColorBlock;
+    
+    private Color32 alphaColor = new Color32(255,255,255,87);
+
+    public void SetInvoke(float x)
+    {
+        invokeTime = x;
+    }
+
+    private void SetColorReturn()
+    {
+        buttonImage.colors = originalColorBlock;
+    }
+
     private void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
@@ -23,21 +41,31 @@ public class popup : MonoBehaviour
         gameObject.SetActive(false);
         gameManager = GameManager.instance;
         source = gameManager.audioSource;
+        
+        originalColorBlock = buttonImage.colors;
+        colorBlock = buttonImage.colors;
+        colorBlock.normalColor = alphaColor;
     }
     
     private void OnEnable()
     {
         playerScr = gameManager.playerScr;
+        buttonImage.colors = colorBlock;
         playerScr.SetIsPopup(true);
         rectTransform.DOAnchorPos(Vector2.zero, 0.5f)
             .SetEase(Ease.OutSine).
-            OnComplete(() => playerScr.SetCanClosePopup(true));
+            OnComplete(() => Invoke(nameof(EnablePopup),invokeTime) );
         source.PlayOneShot(opened);
+    }
+
+    private void EnablePopup()
+    {
+        playerScr.SetCanClosePopup(true);
+        SetColorReturn();
     }
 
     public void DisableObject()
     {
-        
         hydrogen.SetActive(false);
         playerScr.SetCanClosePopup(false);
         playerScr.SetIsPopup(false);
