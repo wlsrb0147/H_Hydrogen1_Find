@@ -1,5 +1,7 @@
 using System;
+using Cysharp.Threading.Tasks;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +13,8 @@ public class popup : MonoBehaviour
     [SerializeField] private AudioClip opened;
     [SerializeField] private AudioClip closed;
     [SerializeField] private GameObject hydrogen;
+    [SerializeField] private GameObject textParent;
+    [SerializeField] private TMP_Text text;
     
     private AudioSource source;
     private GameManager gameManager;
@@ -54,8 +58,21 @@ public class popup : MonoBehaviour
         playerScr.SetIsPopup(true);
         rectTransform.DOAnchorPos(Vector2.zero, 0.5f)
             .SetEase(Ease.OutSine).
-            OnComplete(() => Invoke(nameof(EnablePopup),invokeTime) );
+            OnComplete(() => Delay3S().Forget());
         source.PlayOneShot(opened);
+    }
+
+    private async UniTaskVoid Delay3S()
+    {
+        text.text = "3";
+        await UniTask.Delay(1000);
+        text.text = "2";
+        await UniTask.Delay(1000);
+        text.text = "1";
+        await UniTask.Delay(1000);
+        text.text = "0";
+        textParent.SetActive(false);
+        EnablePopup();
     }
 
     private void EnablePopup()

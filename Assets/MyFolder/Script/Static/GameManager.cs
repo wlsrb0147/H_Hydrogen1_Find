@@ -32,6 +32,8 @@ public class GameManager : MonoBehaviour
     public ZoomScr zoomScr;
     
     public PlayerScr playerScr;
+
+    public bool skipEnding = false;
     
     public void SetResult(Result result)
     {

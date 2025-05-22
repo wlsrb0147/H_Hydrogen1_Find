@@ -53,6 +53,7 @@ public class EndPlayer : MonoBehaviour
         player2.loopPointReached += Player2OnloopPointReached;
         
         player2.Prepare();
+        player2.started += CheckSkip;
         
         Invoke(nameof(SetCanSkipTrue),3f);
 
@@ -70,6 +71,14 @@ public class EndPlayer : MonoBehaviour
         for (int i = 0; i < 10; i++)
         {
             images[i].back = sprites[i];    
+        }
+    }
+
+    private void CheckSkip(VideoPlayer source)
+    {
+        if (GameManager.instance.skipEnding)
+        {
+            GameController.LoadScene();
         }
     }
     
